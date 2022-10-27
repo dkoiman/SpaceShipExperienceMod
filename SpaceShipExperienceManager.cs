@@ -1,59 +1,73 @@
 ﻿using System.Collections.Generic;
 using PavonisInteractive.TerraInvicta;
-using UnityEngine;
 
 namespace SpaceShipExperienceMod {
     public class SpaceShipExperienceManager {
 
         private Dictionary<GameStateID, TISpaceShipExperienceState> 
-            SpaceShipVeterancyStateMapping =
+            spaceShipExperienceMapping =
             new Dictionary<GameStateID, TISpaceShipExperienceState>();
 
-        public TISpaceShipExperienceState this[TISpaceShipState ship] {
+        private TISpaceShipExperienceState this[TISpaceShipState ship] {
             get { 
                 if (ship == null) {
                     return null;
                 }
 
-                if (!SpaceShipVeterancyStateMapping.ContainsKey(ship.ID)) {
+                if (!spaceShipExperienceMapping.ContainsKey(ship.ID)) {
                     this.RegisterShip(ship);
                 }
 
-                return SpaceShipVeterancyStateMapping[ship.ID];
+                return spaceShipExperienceMapping[ship.ID];
             }
         }
 
         public string GetNameRankString(TISpaceShipState ship, bool rank_first = false) {
+            if (!Main.enabled) {
+                return ship.GetDisplayName(GameControl.control.activePlayer);
+            }
             if (rank_first) {
                 return this[ship].GetRankString() + " " + ship.GetDisplayName(GameControl.control.activePlayer);
             }
             return ship.GetDisplayName(GameControl.control.activePlayer) + " " + this[ship].GetRankString();
         }
 
-        public void RegisterShip(TISpaceShipState ship, TISpaceShipExperienceState veterancy = null) {
-            if (SpaceShipVeterancyStateMapping.ContainsKey(ship.ID)) {
+        public void RegisterShip(TISpaceShipState ship, TISpaceShipExperienceState shipExperience = null) {
+            if (!Main.enabled) {
                 return;
             }
 
-            if (veterancy == null) {
-                veterancy = GameStateManager.CreateNewGameState<TISpaceShipExperienceState>();
-                veterancy.InitWithSpaceShipState(ship);
+            if (spaceShipExperienceMapping.ContainsKey(ship.ID)) {
+                return;
             }
 
-            SpaceShipVeterancyStateMapping.Add(ship.ID, veterancy);
+            if (shipExperience == null) {
+                shipExperience = GameStateManager.CreateNewGameState<TISpaceShipExperienceState>();
+                shipExperience.InitWithSpaceShipState(ship);
+            }
+
+            spaceShipExperienceMapping.Add(ship.ID, shipExperience);
+        }
+
+        public void AddExperience(TISpaceShipState ship, int exp) {
+            if (!Main.enabled) {
+                return;
+            }
+
+            this[ship].AddExperience(exp);
         }
 
         public void UnregisterShip(TISpaceShipState ship) {
-            if (!SpaceShipVeterancyStateMapping.ContainsKey(ship.ID)) {
-                TISpaceShipExperienceState shipVeterancyState = this[ship];
-                if (GameStateManager.RemoveGameState<TISpaceShipExperienceState>(shipVeterancyState.ID, false)) {
-                    SpaceShipVeterancyStateMapping.Remove(ship.ID);
+            if (!spaceShipExperienceMapping.ContainsKey(ship.ID)) {
+                TISpaceShipExperienceState shipExperience = this[ship];
+                if (GameStateManager.RemoveGameState<TISpaceShipExperienceState>(shipExperience.ID, false)) {
+                    spaceShipExperienceMapping.Remove(ship.ID);
                 }
             }
         }
 
         public void ResetState() {
-            SpaceShipVeterancyStateMapping.Clear();
+            spaceShipExperienceMapping.Clear();
         }
     }
 }

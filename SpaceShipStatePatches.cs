@@ -25,8 +25,6 @@ namespace SpaceShipExperienceMod {
 
     [HarmonyPatch(typeof(TISpaceShipState), "InitWithTemplate")]
     static class TISpaceShipState_InitWithTemplate_Patch {
-        // In this case the argument is `rawTemplate`, but in others it might be
-        // just `template`.
         static void Postfix(TIDataTemplate rawTemplate, TISpaceShipState __instance) {
             if (rawTemplate as TISpaceShipTemplate != null) {
                 Main.experienceManager.RegisterShip(__instance);
@@ -108,7 +106,7 @@ namespace SpaceShipExperienceMod {
             int expGained = (int)Math.Ceiling(expGainedRaw);
 
             foreach (var ship in survivingShips) {
-                Main.experienceManager[ship].AddExperience(expGained);
+                Main.experienceManager.AddExperience(ship, expGained);
             }
         }
     }
