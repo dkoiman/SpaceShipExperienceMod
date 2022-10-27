@@ -1,0 +1,12 @@
+{
+	"Id": "SpaceShipExperienceMod",
+	"DisplayName": "SpaceShipExperienceMod",
+	"Title": "SpaceShipExperienceMod",
+	"Author": "dkoiman",
+	"ModURL": "TBD",
+	"Requirements": [],
+	"Version": "0.0.1",
+	"Description": "Add experience level to the space ship, gained in combats",
+	"AssemblyName": "SpaceShipExperienceMod.dll",
+	"EntryMethod": "SpaceShipExperienceMod.Main.Load"
+}
