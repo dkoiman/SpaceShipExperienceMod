@@ -65,8 +65,8 @@ namespace SpaceShipExperienceMod {
                 ? PrecombatDataStash.savedPrecombatFoePower
                 : PrecombatDataStash.savedPrecombatAllyPower;
 
-            float difficultyFactor = otherPower / thisPower;
-            float expGainedRaw = otherPower * difficultyFactor / survivingShips.Count();
+            double difficultyFactor = Math.Pow(otherPower / thisPower, 0.3);
+            double expGainedRaw = otherPower * difficultyFactor / survivingShips.Count();
             int expGained = (int)Math.Ceiling(expGainedRaw);
 
             foreach (var ship in survivingShips) {
