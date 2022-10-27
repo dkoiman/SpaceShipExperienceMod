@@ -4,14 +4,14 @@ using PavonisInteractive.TerraInvicta.Entities;
 using UnityEngine;
 
 
-namespace SpaceShipExperienceMod {
+namespace SpaceShipExtras.ShipExperience {
     public class TISpaceShipExperienceState : TIGameState {
         new public TISpaceShipState ref_ship;
 
         private static readonly int[] ranks = { 0, 100, 500, 2500, 10000 };
 
         [SerializeField]
-        private int experience { get;  set; } = 0;
+        public int experience { get;  private set; } = 0;
 
         public void AddExperience(int exp) {
             experience += exp;

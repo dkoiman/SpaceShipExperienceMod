@@ -4,7 +4,7 @@ using PavonisInteractive.TerraInvicta;
 using PavonisInteractive.TerraInvicta.Systems.Bootstrap;
 
 
-namespace SpaceShipExperienceMod {
+namespace SpaceShipExtras.ShipExperience {
     [HarmonyPatch(typeof(SolarSystemBootstrap), "LoadGame")]
     static class SolarSystemBootstrap_LoadGame_Patch {
         static void Prefix() {
@@ -34,11 +34,4 @@ namespace SpaceShipExperienceMod {
             Main.experienceManager.UnregisterShip(__instance);
         }
     }
-
-    static class PrecombatDataStash {
-        public static float savedPrecombatAllyPower;
-        public static float savedPrecombatFoePower;
-    }
-
- 
 }

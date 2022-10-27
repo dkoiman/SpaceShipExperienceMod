@@ -6,7 +6,7 @@ using PavonisInteractive.TerraInvicta;
 using PavonisInteractive.TerraInvicta.SpaceCombat.UI;
 using PavonisInteractive.TerraInvicta.Ship;
 
-namespace SpaceShipExperienceMod {
+namespace SpaceShipExtras.ShipExperience {
     // Hovering over ship pictogram upon selecting friendly or enemy fleet.
     [HarmonyPatch(typeof(FleetShipGridItemController), "BuildShipTooltip")]
     static class FleetShipGridItemController_BuildShipTooltip_Patch {

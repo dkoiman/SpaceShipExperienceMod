@@ -1,5 +1,13 @@
 # Patchnotes
 
+## 0.0.2
+
+* Making the mod a collection of various extra's for space ships, not only exp.
+* * Saves from the previous release are compatible with the new release.
+* New "Utility ship" hull layout.
+* Added 'Deep Space Reapir Bay' to allow engine and power plant repairs for
+  ships afar from the stations.
+
 ## 0.0.1
 
 * Initial cosmetic release

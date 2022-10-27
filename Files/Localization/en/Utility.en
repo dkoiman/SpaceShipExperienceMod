@@ -1,0 +1,5 @@
+TIUtilityShipHull.displayName.UtilityShip=Utility ship
+TIDeepSpaceRepairBay.displayName.DeepSpaceRepairBay=Deep Space Repair Bay
+TIDeepSpaceRepairBay.description.DeepSpaceRepairBay=Allows repairing engine and power plant for fleets in deep space. Can only be fitted to "Utility ship"
+DeepSpaceRepairFleetOperation.displayName=Deep Space Repair
+DeepSpaceRepairFleetOperation.description=Repairs engine and power plant on damaged ships in deep space

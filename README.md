@@ -1,6 +1,6 @@
-# Space Ship Experience Mod
+# Space Ship Extras
 
-This mods adds combat experience to the ships. Requires Unity Mod Manager.
+Collection of extra features for space ships
 
 ## Installation
 
@@ -18,7 +18,11 @@ compatible with the vanilla game. If you want to remove the mod, but continue
 from the save you made with the mod, you have to modify your save file to remove
 `SpaceShipExperienceMod.TISpaceShipExperienceState` entry entirely.
 
-## Experience accumulation and ranks
+## Features
+
+### Space ship experience
+
+#### Experience accumulation and ranks
 
 Ships accumulate experince in battles. The experience is granted to surviving
 ships regardless of whether the fight was won or lost. The gained experience
@@ -37,7 +41,7 @@ following:
 * Hero - <= 10000 EXP
 * Legen - >= 10000 EXP
 
-## UI
+#### UI
 Ranks are prefixed or suffixed to the ship name in most UI. There is a number of
 UIs where the rank is omitted due to technical reasons:
 * Docked ship UI (because I have no idea what canvas is that lol)
@@ -46,7 +50,31 @@ UIs where the rank is omitted due to technical reasons:
 
 If you find the rank omitted in any other UI, let me know on Discord.
 
-## Rank bonuses
+#### Rank bonuses
 
 At this point in time the rank is purely cosmetic and doesn't add any bonuses.
 There are plans to add various effects based on rank of ships in fleets.
+
+### Deep Space Repair
+
+The mod adds `Deep Space Repair Bay` - a utility module that allows to perform
+limitted repairs in the deep space. 
+
+#### Use
+
+* The mod introduces new hull type - `Utility ship`
+* `Deep Space Repair Bay` can ONLY be fitted to `Utility ship` design.
+* The module is capable of fixing Engine and Power plant subsystem and parts.
+  `Deep Space Emergency Repair` operation becomes available in the fleet actions
+  bar when the fleet has at least one ship with an operational 
+  `Deep Space Repair Bay` and any of the ships in the fleet sustained damage to
+  engines or power plant.
+* The cost of the repairs are the same as if they were done on a station, but
+  the repair time is 4 times longer. Having multiple ships with the module
+  speeds up the process.
+
+#### Known issues
+
+* There is a slight but that may allow initiating deep space repairs when the
+  faction has insufficient resources to do so. The behaviour is consistent with
+  the repair behaviour in the vanilla game and thus left as is.

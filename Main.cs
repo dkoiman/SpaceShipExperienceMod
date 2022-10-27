@@ -3,12 +3,27 @@
 using HarmonyLib;
 using UnityModManagerNet;
 
+using PavonisInteractive.TerraInvicta;
 using PavonisInteractive.TerraInvicta.Debugging;
 using PavonisInteractive.TerraInvicta.Systems.Bootstrap;
 
+using SpaceShipExtras.ShipExperience;
 
-namespace SpaceShipExperienceMod
-{
+// Hack for save compatibility.
+namespace SpaceShipExperienceMod {
+    public class TISpaceShipExperienceState : SpaceShipExtras.ShipExperience.TISpaceShipExperienceState {
+        public override void PostInitializationInit_4() {
+            SpaceShipExtras.ShipExperience.TISpaceShipExperienceState exp =
+                GameStateManager.CreateNewGameState<SpaceShipExtras.ShipExperience.TISpaceShipExperienceState>();
+            GameStateManager.RemoveGameState<TISpaceShipExperienceState>(this.ID);
+            exp.AddExperience(this.experience);
+            exp.ref_ship = this.ref_ship;
+            SpaceShipExtras.Main.experienceManager.RegisterShip(this.ref_ship, exp);
+        }
+    }
+}
+
+namespace SpaceShipExtras {
     public class Main
     {
         public static bool enabled;

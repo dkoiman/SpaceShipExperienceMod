@@ -1,12 +1,12 @@
 {
-	"Id": "SpaceShipExperienceMod",
-	"DisplayName": "SpaceShipExperienceMod",
-	"Title": "SpaceShipExperienceMod",
+	"Id": "SpaceShipExtras",
+	"DisplayName": "Space Ship Extras",
+	"Title": "Space Ship Extras",
 	"Author": "dkoiman",
-	"ModURL": "TBD",
+	"ModURL": "https://github.com/dkoiman/SpaceShipExtras",
 	"Requirements": [],
-	"Version": "0.0.1",
-	"Description": "Add experience level to the space ship, gained in combats",
-	"AssemblyName": "SpaceShipExperienceMod.dll",
-	"EntryMethod": "SpaceShipExperienceMod.Main.Load"
+	"Version": "0.0.2",
+	"Description": "Extra features for space ships",
+	"AssemblyName": "SpaceShipExtras.dll",
+	"EntryMethod": "SpaceShipExtras.Main.Load"
 }

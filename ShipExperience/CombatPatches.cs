@@ -7,7 +7,12 @@ using HarmonyLib;
 using PavonisInteractive.TerraInvicta;
 using PavonisInteractive.TerraInvicta.SpaceCombat.UI;
 
-namespace SpaceShipExperienceMod {
+namespace SpaceShipExtras.ShipExperience {
+    static class PrecombatDataStash {
+        public static float savedPrecombatAllyPower;
+        public static float savedPrecombatFoePower;
+    }
+
     [HarmonyPatch(typeof(PrecombatController), "FillOutCombatData")]
     static class PrecombatController_FillOutCombatData_Patch {
         static void Prefix(PrecombatController __instance) {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using PavonisInteractive.TerraInvicta;
 
-namespace SpaceShipExperienceMod {
+namespace SpaceShipExtras.ShipExperience {
     public class SpaceShipExperienceManager {
 
         private Dictionary<GameStateID, TISpaceShipExperienceState> 

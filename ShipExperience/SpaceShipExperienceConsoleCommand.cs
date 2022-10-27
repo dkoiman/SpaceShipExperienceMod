@@ -3,7 +3,7 @@
 using PavonisInteractive.TerraInvicta;
 using PavonisInteractive.TerraInvicta.Debugging;
 
-namespace SpaceShipExperienceMod {
+namespace SpaceShipExtras.ShipExperience {
     public class SpaceShipExperienceConsoleCommand {
         public SpaceShipExperienceConsoleCommand(TerminalController terminalController) {
             this.terminalController = terminalController;
