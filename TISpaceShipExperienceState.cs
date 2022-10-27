@@ -9,14 +9,6 @@ namespace SpaceShipExperienceMod {
         new public TISpaceShipState ref_ship;
 
         private static readonly int[] ranks = { 0, 100, 500, 2500, 10000 };
-        private static readonly string[] rankNames = {
-            "Rookie",
-            "Soldier",
-            "Veteran",
-            "Elite",
-            "Hero",
-            "Legend"
-        };
 
         [SerializeField]
         private int experience { get;  set; } = 0;
@@ -36,7 +28,7 @@ namespace SpaceShipExperienceMod {
         }
 
         public string GetRankString() {
-            return "[" + rankNames[GetRank()] + "]";
+            return "[" + Loc.T("TISpaceShipRank.Rank_" + GetRank().ToString()) + "]";
         }
 
         public void InitWithSpaceShipState(TISpaceShipState ship) {
