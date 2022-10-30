@@ -1,5 +1,10 @@
 # Patchnotes
 
+
+## 0.0.3
+
+* Fixed problem with experience being reset over a refit.
+
 ## 0.0.2
 
 * Making the mod a collection of various extra's for space ships, not only exp.

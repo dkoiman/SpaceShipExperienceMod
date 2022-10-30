@@ -32,6 +32,13 @@ namespace SpaceShipExtras.ShipExperience {
             return ship.GetDisplayName(GameControl.control.activePlayer) + " " + this[ship].GetRankString();
         }
 
+        public int GetExperience(TISpaceShipState ship) {
+            if (!Main.enabled) {
+                return 0;
+            }
+            return this[ship].experience;
+        }
+
         public void RegisterShip(TISpaceShipState ship, TISpaceShipExperienceState shipExperience = null) {
             if (!Main.enabled) {
                 return;
