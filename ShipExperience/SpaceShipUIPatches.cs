@@ -63,6 +63,19 @@ namespace SpaceShipExtras.ShipExperience {
         }
     }
 
+    // Docked ships list
+    [HarmonyPatch(typeof(DockedShipListItemController), "UpdateListItem")]
+    static class DockedShipListItemController_UpdateListItem_Patch {
+        static void Postfix(ref DockedShipListItemController __instance) {
+            TISpaceShipState ship =
+                __instance
+                .GetType()
+                .GetField("shipState", BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetValue(__instance) as TISpaceShipState;
+            __instance.shipName.SetText(Main.experienceManager.GetNameRankString(ship), true);
+        }
+    }
+
     // Current ship name in selected ship detailed info.
     [HarmonyPatch(typeof(FleetsScreenController), "UpdateIndividualDataScreen")]
     static class FleetsScreenController_UpdateIndividualDataScreen_Patch {
@@ -149,6 +162,5 @@ namespace SpaceShipExtras.ShipExperience {
 
     // SpaceCombatCanvasController reinforcement
     // FriendlyShipListItemController targeting
-    // DockedShipListItemController ???
     // CombatRecord ???
 }

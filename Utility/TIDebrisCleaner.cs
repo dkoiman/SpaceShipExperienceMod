@@ -2,10 +2,9 @@
 
 using PavonisInteractive.TerraInvicta;
 
-
 namespace SpaceShipExtras.Utility {
-    public class TIDeepSpaceRepairBay : TIUtilityModuleTemplate {
-        public TIDeepSpaceRepairBay() {
+    public class TIDebrisCleaner : TIUtilityModuleTemplate {
+        public TIDebrisCleaner() {
             var resource = new ResourceCostBuilder();
 
             resource.water = 0f;
@@ -13,13 +12,13 @@ namespace SpaceShipExtras.Utility {
             resource.metals = 0.68f;
             resource.nobleMetals = 0.1f;
 
-            base.dataName = "DeepSpaceRepairBay";
-            base.friendlyName = "Deep Space Repair Bay";
-            base.crew = 100;
-            base.mass_tons = 400;
+            base.dataName = "DebrisCleaner";
+            base.friendlyName = "Debris Cleaner";
+            base.crew = 10;
+            base.mass_tons = 40;
             base.grouping = -1;
-            base.requiredProjectName = "Project_Shipyard";
-            base.powerRequirement_MW = 40000;
+            base.requiredProjectName = "Project_HardenedHabShelters";
+            base.powerRequirement_MW = 400;
             base.laserPowerBonus_MW = 0;
             base.thrustMultiplier = 1;
             base.EVMultiplier = 1;
@@ -28,7 +27,7 @@ namespace SpaceShipExtras.Utility {
             base.requiresFusionDrive = false;
             base.weightedBuildMaterials = resource;
             base.specialModuleRules = new List<SpecialModuleRule> { };
-            base.iconResource = "space_ship_extras/ICO_DeepSpaceRepairBay";
+            base.iconResource = "space_ship_extras/ICO_DebrisCleaner";
             base.modelResource = "";
         }
     }

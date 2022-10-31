@@ -1,5 +1,16 @@
 TIUtilityShipHull.displayName.UtilityShip=Utility ship
 TIDeepSpaceRepairBay.displayName.DeepSpaceRepairBay=Deep Space Repair Bay
-TIDeepSpaceRepairBay.description.DeepSpaceRepairBay=Allows repairing engine and power plant for fleets in deep space. Can only be fitted to "Utility ship"
+TIDeepSpaceRepairBay.description.DeepSpaceRepairBay=Allows repairing engine and power plant for fleets in deep space. Multiple ships with the module speed up the process. Can only be fitted to "Utility ship"
 DeepSpaceRepairFleetOperation.displayName=Deep Space Repair
 DeepSpaceRepairFleetOperation.description=Repairs engine and power plant on damaged ships in deep space
+UI.Notifications.DeepSpaceRepairDone.Headline={0} fleet {1} finished deep space repairs
+UI.Notifications.DeepSpaceRepairDone.Summary={0} fleet {1} finished deep space repairs
+UI.Notifications.DeepSpaceRepairDone.Detail={0} fleet {1} finished deep space repairs
+
+TIDebrisCleaner.displayName.DebrisCleaner=Debris Cleaner
+TIDebrisCleaner.description.DebrisCleaner=Allows cleaning debris in the orbit. Requires 1/1000th of the orbit's circumference amount of delta-V, and the same amount of days to complete. Multiple ships with the module speed up the process and lower the amount of required delta-V. Can only be fitted to "Utility ship".
+ClearDebrisOperation.displayName=Clear Debris
+ClearDebrisOperation.description=Clears one cloud of debris in the current orbit
+UI.Notifications.DebrisCleared.Headline={0} fleet {1} finished clearing debris
+UI.Notifications.DebrisCleared.Summary={0} fleet {1} finished clearing debris at {2}
+UI.Notifications.DebrisCleared.Detail={0} fleet {1} finished clearing debris at {2}

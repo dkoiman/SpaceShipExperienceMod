@@ -1,6 +1,19 @@
 # Patchnotes
 
 
+## 0.0.4
+
+* Display inactive icon for the repair bay if there is no ships with essential
+  damage in the fleet
+* Fixed crash when fitting engines to utility ship
+* Display rank to the list of docked ships
+* Fixed missing highlighted deep space repair icon
+* Added Debris Cleaner Module
+* Added notification screen on deep space repairs finished and debris
+  cleaned.
+* Made Spacedock tech to be a pre-requisite for building utility ships,
+  not warship tech.
+
 ## 0.0.3
 
 * Fixed problem with experience being reset over a refit.

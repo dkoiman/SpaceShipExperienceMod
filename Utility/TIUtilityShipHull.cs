@@ -85,7 +85,7 @@ namespace SpaceShipExtras.Utility {
                 "OBJ_battle_earth_GS",
                 "OBJ_battle_earth_GS_ALT",
             };
-            base.requiredProjectName = "Project_Warships";
+            base.requiredProjectName = "Project_SpaceDock";
             base.weightedBuildMaterials = resource;
             base.baseConstructionTime_days = 60;
             base.shipModuleSlots = new List<ShipModuleSlot> {

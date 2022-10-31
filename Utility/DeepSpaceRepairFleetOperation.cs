@@ -88,6 +88,39 @@ namespace SpaceShipExtras.Utility {
             return EssentialRepairsCost(fleetState).Count > 0;
         }
 
+        public static void LogOurFleetRepaired(TISpaceFleetState fleet) {
+            NotificationQueueItem notificationQueueItem =
+                typeof(TINotificationQueueState)
+                .GetMethod("InitItem", BindingFlags.NonPublic | BindingFlags.Static)
+                .Invoke(null, new object[] { }) as NotificationQueueItem;
+            notificationQueueItem.alertFactions.Add(fleet.faction);
+            notificationQueueItem.logFactions = notificationQueueItem.alertFactions;
+            notificationQueueItem.icon = fleet.iconResource;
+            notificationQueueItem.itemHammer = Loc.T("UI.Notifications.MissionControl");
+            notificationQueueItem.popupResource1 = fleet.iconResource;
+            notificationQueueItem.gotoGameState = fleet;
+            notificationQueueItem.itemHeadline = Loc.T("UI.Notifications.FleetRepairedHed", new object[]
+            {
+                fleet.GetDisplayName(TINotificationQueueState.activePlayer)
+            });
+            notificationQueueItem.itemSummary = Loc.T("UI.Notifications.FleetRepairedSummary", new object[]
+            {
+                fleet.GetDisplayName(TINotificationQueueState.activePlayer),
+                fleet.location.GetDisplayName(TINotificationQueueState.activePlayer)
+            });
+            notificationQueueItem.itemDetail = Loc.T("UI.Notifications.FleetRepairedSummary", new object[]
+            {
+                fleet.GetDisplayName(TINotificationQueueState.activePlayer),
+                fleet.location.GetDisplayName(TINotificationQueueState.activePlayer)
+            });
+            notificationQueueItem.soundToPlay = "event:/SFX/UI_SFX/trig_SFX_RepairsComplete";
+            typeof(TINotificationQueueState)
+                .GetMethod("AddItem", BindingFlags.NonPublic | BindingFlags.Static)
+                .Invoke(null, new object[] { notificationQueueItem, false, null });
+        }
+
+        // Overrides
+
         public override OperationTiming GetOperationTiming() {
             return OperationTiming.DelayedExecutionOfInstantEffect;
         }
@@ -102,6 +135,10 @@ namespace SpaceShipExtras.Utility {
 
         public override bool CancelUponDepartHab() {
             return false;
+        }
+
+        public override bool CancelUponCombat() {
+            return true;
         }
 
         public override float GetDuration_days(TIGameState actorState, TIGameState target, Trajectory trajectory = null) {
@@ -124,7 +161,7 @@ namespace SpaceShipExtras.Utility {
 
         public override bool OpVisibleToActor(TIGameState actorState, TIGameState targetState = null) {
             TISpaceFleetState ref_fleet = actorState.ref_fleet;
-            return HasEssentialRepairs(ref_fleet) && HasFunctionalDeepSpaceRescueBay(ref_fleet) && !ref_fleet.dockedAtHab;
+            return HasFunctionalDeepSpaceRescueBay(ref_fleet) && !ref_fleet.dockedAtHab;
         }
 
         public override bool ActorCanPerformOperation(TIGameState actorState, TIGameState target) {
@@ -187,7 +224,7 @@ namespace SpaceShipExtras.Utility {
                 foreach (TISpaceShipState tispaceShipState in ref_fleet.ships) {
                     tispaceShipState.plannedResupplyAndRepair.ProcessResupplyAndRepair(tispaceShipState);
                 }
-                TINotificationQueueState.LogOurFleetRepaired(ref_fleet);
+                LogOurFleetRepaired(ref_fleet);
                 return;
             }
 
