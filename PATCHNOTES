@@ -1,10 +1,13 @@
 # Patchnotes
 
-## ToT
+## 0.0.5
 
 * Fixed operations from special modules lingering during transfer.
 * Fixed confirmation button for `Clear Debris` not getting active sometimes.
 * Added dedicated pre-requisite project for special modules.
+* Fixed experience calculation for battles without player faction.
+* Added faction support gain upon wins. Alien wins boost protectorate and
+  servants.
 
 ## 0.0.4
 

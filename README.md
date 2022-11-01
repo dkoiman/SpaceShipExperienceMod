@@ -44,7 +44,6 @@ following:
 #### UI
 Ranks are prefixed or suffixed to the ship name in most UI. There is a number of
 UIs where the rank is omitted due to technical reasons:
-* Docked ship UI (because I have no idea what canvas is that lol)
 * Reinforcements UI (because the specific methods are hard to patch)
 * Combat UI primary target tooltip in the ship list (because who cares lol)
 
@@ -52,14 +51,26 @@ If you find the rank omitted in any other UI, let me know on Discord.
 
 #### Rank bonuses
 
-At this point in time the rank is purely cosmetic and doesn't add any bonuses.
-There are plans to add various effects based on rank of ships in fleets.
+So far rank serves two purposes:
+1) Cosmetic
+2) Winning space battle provides a boost to faction support depending on
+   the highest ship rank in the fleet and power balance of the fleets.
+   Current formula is:
+
+   RANK_IDX - Numerical representation of rank, Rookie - 0, Soldier - 1 etc.
+              The highest rank in the fleet is used for calculations.
+   RANK_FACTOR = RANK_IDX * RANK_IDX / 5
+   FLEET_FACTOR = ALLY_POWER / FOE_POWER
+   POPULARITY_GAIN = RANK_FACTOR * FLEET_FACTOR
+
+There are plans to add more effects based on rank of ships in fleets, including
+negative effects for loses.
 
 ### Utility Ship Hull
 
 The mod adds a new hull type that can carry a single utility module. The ship
-hull is unlocked with `Spacedock` tech. This ship type is the only design that
-is allowed to carry the special utility modules added with this mod.
+hull is unlocked with `SpaceDock` faction project. This ship type is the only
+design that is allowed to carry the special utility modules added with this mod.
 
 ### Deep Space Repair
 
@@ -68,7 +79,8 @@ limitted repairs in the deep space.
 
 #### Use
 
-* Unlocks with `Shipyards` tech.
+* Unlocks with `Deep Space Maintenance` faction project which depends on
+  `Shipyards` project.
 * Can ONLY be fitted to `Utility ship` design.
 * The module is capable of fixing Engine and Power plant subsystem and parts.
   `Deep Space Emergency Repair` operation becomes available in the fleet actions
@@ -92,18 +104,11 @@ operation to remove a cloud of debris.
 
 #### Use
 
-* Unlocks with `Hardened hab shelters` tech (provisional, likely will get its
-  own tech later on)
+* Unlocks with `Orbital Capture` faction project, which depends on SpaceDock 
+  project and Applied Artificial Intelegence global tech.
 * Can ONLY be fitted to `Utility ship` design.
 * Allows executing "Clear Debris" operation in orbits with debris.
 * The operation required delta-V equal to 1/1000th of the orbit's circumference
   and takes as many days to complete.
 * Multiple ships with the module in the fleet speed up the process and reduce
   the delta-V cost.
-
-#### Known issues
-
-* Sometimes after finishing `Clear Debris` the game doesn't allow to immediately
-  do it again. I am not sure why that happens, but doing a transfer to the same
-  orbit you are on fixes the problem.
-* The Clear Debris Icon is active durint transfer. I have no idea why lol
