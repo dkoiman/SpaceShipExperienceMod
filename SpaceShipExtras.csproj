@@ -81,7 +81,9 @@
     <Compile Include="Utility\ClearDebrisOperation.cs" />
     <Compile Include="Utility\DeepSpaceRepairFleetOperation.cs" />
     <Compile Include="Utility\Patches.cs" />
+    <Compile Include="Utility\TIOrbitalCaptureProject.cs" />
     <Compile Include="Utility\TIDebrisCleaner.cs" />
+    <Compile Include="Utility\TIDeepSpaceMaintenanceProject.cs" />
     <Compile Include="Utility\TIDeepSpaceRepairBay.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -17,7 +17,7 @@ namespace SpaceShipExtras.Utility {
             base.crew = 10;
             base.mass_tons = 40;
             base.grouping = -1;
-            base.requiredProjectName = "Project_HardenedHabShelters";
+            base.requiredProjectName = "Project_OrbitalCapture";
             base.powerRequirement_MW = 400;
             base.laserPowerBonus_MW = 0;
             base.thrustMultiplier = 1;

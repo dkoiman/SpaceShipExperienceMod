@@ -52,9 +52,13 @@ namespace SpaceShipExtras.Utility {
     static class TemplateManager_ValidateAllTemplates_Patch {
         // Intercept the method prior execution.
         static void Prefix() {
-            TemplateManager.Add<TIDeepSpaceRepairBay>(new TIDeepSpaceRepairBay());
-            TemplateManager.Add<TIDebrisCleaner>(new TIDebrisCleaner());
             TemplateManager.Add<TIShipHullTemplate>(new TIUtilityShipHull());
+
+            TemplateManager.Add<TIDeepSpaceRepairBay>(new TIDeepSpaceRepairBay());
+            TemplateManager.Add<TIProjectTemplate>(new TIDeepSpaceMaintenanceProject());
+
+            TemplateManager.Add<TIDebrisCleaner>(new TIDebrisCleaner());
+            TemplateManager.Add<TIProjectTemplate>(new TIOrbitalCaptureProject());
         }
     }
 

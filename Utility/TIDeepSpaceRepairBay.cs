@@ -18,7 +18,7 @@ namespace SpaceShipExtras.Utility {
             base.crew = 100;
             base.mass_tons = 400;
             base.grouping = -1;
-            base.requiredProjectName = "Project_Shipyard";
+            base.requiredProjectName = "Project_DeepSpaceMaintenance";
             base.powerRequirement_MW = 40000;
             base.laserPowerBonus_MW = 0;
             base.thrustMultiplier = 1;
