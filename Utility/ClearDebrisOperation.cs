@@ -109,7 +109,7 @@ namespace SpaceShipExtras.Utility {
         }
 
         public override bool RequiresThrustProfile() {
-            return true;
+            return false;
         }
 
         public override bool OpVisibleToActor(TIGameState actorState, TIGameState targetState = null) {
