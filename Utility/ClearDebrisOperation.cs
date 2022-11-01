@@ -125,7 +125,9 @@ namespace SpaceShipExtras.Utility {
             return (
                 HasFunctionalDebrisCleaner(ref_fleet) &&
                 HasDebrisInCurrentOrbit(ref_fleet) &&
-                FleetHasDeltaVToExecute(ref_fleet));
+                FleetHasDeltaVToExecute(ref_fleet) &&
+                !ref_fleet.transferAssigned &&
+                !ref_fleet.inCombat);
         }
 
         public override List<TIGameState> GetPossibleTargets(TIGameState actorState, TIGameState defaultTarget = null) {

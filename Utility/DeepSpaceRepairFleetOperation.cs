@@ -170,8 +170,12 @@ namespace SpaceShipExtras.Utility {
             }
             TISpaceFleetState ref_fleet = actorState.ref_fleet;
             return
-                HasEssentialRepairs(ref_fleet) && HasFunctionalDeepSpaceRescueBay(ref_fleet)
-                && !ref_fleet.inCombat && ref_fleet.CanAffordAnyRepairs() && !ref_fleet.dockedAtHab;
+                HasEssentialRepairs(ref_fleet) &&
+                HasFunctionalDeepSpaceRescueBay(ref_fleet) &&
+                ref_fleet.CanAffordAnyRepairs() &&
+                !ref_fleet.transferAssigned &&
+                !ref_fleet.inCombat &&
+                !ref_fleet.dockedAtHab;
         }
 
         public override List<TIResourcesCost> ResourceCostOptions(TIFactionState faction, TIGameState target, TIGameState actor, bool checkCanAfford = true) {
