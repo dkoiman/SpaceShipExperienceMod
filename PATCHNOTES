@@ -1,5 +1,10 @@
 # Patchnotes
 
+## ToT
+
+* Fixed operations from special modules lingering during transfer.
+* Fixed confirmation button for `Clear Debris` not getting active sometimes.
+* Added dedicated pre-requisite project for special modules.
 
 ## 0.0.4
 
