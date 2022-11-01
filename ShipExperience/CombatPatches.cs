@@ -105,7 +105,7 @@ namespace SpaceShipExtras.ShipExperience {
             RankEffects.DispatchResults(
                 evalFactionA ? PrecombatDataStash.factionA : PrecombatDataStash.factionB,
                 evalFactionA ? PrecombatDataStash.ranksFactionA : PrecombatDataStash.ranksFactionB,
-                thisPower / otherPower,
+                otherPower / thisPower,
                 outcome);
 
             var survivingShips =

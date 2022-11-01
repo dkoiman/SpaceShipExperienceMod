@@ -60,7 +60,7 @@ So far rank serves two purposes:
    RANK_IDX - Numerical representation of rank, Rookie - 0, Soldier - 1 etc.
               The highest rank in the fleet is used for calculations.
    RANK_FACTOR = RANK_IDX * RANK_IDX / 5
-   FLEET_FACTOR = ALLY_POWER / FOE_POWER
+   FLEET_FACTOR = FOE_POWER / ALLY_POWER
    POPULARITY_GAIN = RANK_FACTOR * FLEET_FACTOR
 
 There are plans to add more effects based on rank of ships in fleets, including

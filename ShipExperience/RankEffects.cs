@@ -30,7 +30,6 @@ namespace SpaceShipExtras.ShipExperience {
             int maxRank = ranks.Values.Max();
             float propaganda = maxRank * maxRank / 5 * powerBalance;
 
-
             if (outcome == Outcome.WIN && !faction.IsAlienFaction) {
                 BoostOpinion(faction, propaganda);
             }
