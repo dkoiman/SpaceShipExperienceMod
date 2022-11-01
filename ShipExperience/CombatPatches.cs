@@ -9,8 +9,10 @@ using PavonisInteractive.TerraInvicta.SpaceCombat.UI;
 
 namespace SpaceShipExtras.ShipExperience {
     static class PrecombatDataStash {
-        public static float savedPrecombatAllyPower;
-        public static float savedPrecombatFoePower;
+        public static TIFactionState factionA = null;
+        public static TIFactionState factionB = null;
+        public static float savedPrecombatPowerFactionA;
+        public static float savedPrecombatPowerFactionB;
     }
 
     [HarmonyPatch(typeof(PrecombatController), "FillOutCombatData")]
@@ -21,38 +23,72 @@ namespace SpaceShipExtras.ShipExperience {
                 .GetType()
                 .GetField("combat", BindingFlags.NonPublic | BindingFlags.Instance)
                 .GetValue(__instance) as TISpaceCombatState;
-            TISpaceFleetState x = combat.fleets[1];
-            TIFactionState xFaction = (x != null) ? x.faction : null;
-            bool xAlly = xFaction == GameControl.control.activePlayer;
 
-            TISpaceFleetState allyFleet = xAlly ? combat.fleets[1] : combat.fleets[0];
-            TISpaceFleetState foeFleet = xAlly ? combat.fleets[0] : combat.fleets[1];
+            float powerFactionA = 0;
+            float powerFactionB = 0;
+            TISpaceFleetState fleetFactionA = combat.fleets[0];
+            TISpaceFleetState fleetFactionB = combat.fleets[1];
+            TIFactionState factionA = fleetFactionA?.faction;
+            TIFactionState factionB = fleetFactionB?.faction;
             TIHabState hab = combat.hab;
 
-            bool allyHasHab = (hab != null) && (hab.faction == xFaction);
-            bool foeHasHab = (hab != null) && (hab.faction != xFaction);
-
-            float allyPower = allyHasHab ? hab.SpaceCombatValue() : 0;
-            float foePower = foeHasHab ? hab.SpaceCombatValue() : 0;
-
-            if (allyFleet != null) {
-                allyPower += allyFleet.SpaceCombatValue();
+            if (factionA == null || hab?.faction == factionA) {
+                factionA = hab.faction;
+                powerFactionA += hab.SpaceCombatValue();
             }
 
-            if (foeFleet != null) {
-                foePower += foeFleet.SpaceCombatValue();
+            if (factionB == null || hab?.faction == factionB) {
+                factionB = hab.faction;
+                powerFactionB += hab.SpaceCombatValue();
             }
 
-            PrecombatDataStash.savedPrecombatAllyPower = allyPower;
-            PrecombatDataStash.savedPrecombatFoePower = foePower;
+            if (fleetFactionA != null) {
+                powerFactionA += fleetFactionA.SpaceCombatValue();
+            }
+
+            if (fleetFactionB != null) {
+                powerFactionB += fleetFactionB.SpaceCombatValue();
+            }
+
+            PrecombatDataStash.factionA = factionA;
+            PrecombatDataStash.factionB = factionB;
+            PrecombatDataStash.savedPrecombatPowerFactionA = powerFactionA;
+            PrecombatDataStash.savedPrecombatPowerFactionB = powerFactionB;
         }
     }
 
-    [HarmonyPatch(typeof(TISpaceFleetState), "PostCombat")]
-    static class TISpaceFleetState_PostCombat_Patch {
-        static void Postfix(ref TISpaceFleetState __instance) {
+    [HarmonyPatch(typeof(TISpaceCombatState), "SetWinnerAndLoser")]
+    static class TISpaceCombatState_SetWinnerAndLoser_Patch {
+        enum Outcome {
+            WIN,
+            LOSS,
+            DRAW,
+            TOTAL_ANIHILATION
+        }
+
+        static TISpaceFleetState WinnerFleet(TISpaceCombatState combat) {
+            if (combat.fleets[0] != null) {
+                return combat.winner == combat.fleets[0].faction ? combat.fleets[0] : combat.fleets[1];
+            } else {
+                return combat.winner == combat.fleets[1].faction ? combat.fleets[1] : combat.fleets[0];
+            }
+        }
+
+        static TISpaceFleetState LooserFleet(TISpaceCombatState combat) {
+            if (combat.fleets[0] != null) {
+                return combat.loser == combat.fleets[0].faction ? combat.fleets[0] : combat.fleets[1];
+            } else {
+                return combat.loser == combat.fleets[1].faction ? combat.fleets[1] : combat.fleets[0];
+            }
+        }
+
+        static void EvalResult(TISpaceFleetState thisFleet, TISpaceFleetState otherFleet, Outcome outcome) {
+            if (thisFleet == null) {
+                return;
+            }
+
             var survivingShips =
-                from ship in __instance.ships
+                from ship in thisFleet.ships
                 where !ship.ShipDestroyed()
                 select ship;
 
@@ -60,15 +96,15 @@ namespace SpaceShipExtras.ShipExperience {
                 return;
             }
 
-            bool xAlly = __instance.faction == GameControl.control.activePlayer;
+            bool evalFactionA = thisFleet.faction == PrecombatDataStash.factionA;
             float thisPower =
-                xAlly
-                ? PrecombatDataStash.savedPrecombatAllyPower
-                : PrecombatDataStash.savedPrecombatFoePower;
+                evalFactionA
+                ? PrecombatDataStash.savedPrecombatPowerFactionA
+                : PrecombatDataStash.savedPrecombatPowerFactionB;
             float otherPower =
-                xAlly
-                ? PrecombatDataStash.savedPrecombatFoePower
-                : PrecombatDataStash.savedPrecombatAllyPower;
+                evalFactionA
+                ? PrecombatDataStash.savedPrecombatPowerFactionB
+                : PrecombatDataStash.savedPrecombatPowerFactionA;
 
             double difficultyFactor = Math.Pow(otherPower / thisPower, 0.3);
             double expGainedRaw = otherPower * difficultyFactor / survivingShips.Count();
@@ -77,6 +113,25 @@ namespace SpaceShipExtras.ShipExperience {
             foreach (var ship in survivingShips) {
                 Main.experienceManager.AddExperience(ship, expGained);
             }
+        }
+
+        static void Postfix(TISpaceCombatState __instance) {
+            if (__instance.bothSidesDestroyed) {
+                return;
+            }
+
+            if (!__instance.combatOccurs) {
+                return;
+            }
+
+            if (__instance.draw ) {
+                EvalResult(__instance.fleets[0], __instance.fleets[1], Outcome.DRAW);
+                EvalResult(__instance.fleets[1], __instance.fleets[0], Outcome.DRAW);
+                return;
+            }
+
+            EvalResult(WinnerFleet(__instance), LooserFleet(__instance), Outcome.WIN);
+            EvalResult(LooserFleet(__instance), WinnerFleet(__instance), Outcome.LOSS);
         }
     }
 }
