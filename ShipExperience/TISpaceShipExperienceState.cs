@@ -10,6 +10,16 @@ namespace SpaceShipExtras.ShipExperience {
 
         private static readonly int[] ranks = { 0, 100, 500, 2500, 10000 };
 
+        public static int ExpToRank(int exp) {
+            int rank = 0;
+            for (; rank < ranks.Length; rank++) {
+                if (exp <= ranks[rank]) {
+                    break;
+                }
+            }
+            return rank;
+        }
+
         [SerializeField]
         public int experience { get;  private set; } = 0;
 
@@ -18,13 +28,8 @@ namespace SpaceShipExtras.ShipExperience {
         }
 
         public int GetRank() {
-            int rank = 0;
-            for (; rank < ranks.Length; rank++) {
-                if (experience <= ranks[rank]) {
-                    break;
-                }
-            }
-            return rank;
+
+            return ExpToRank(experience);
         }
 
         public string GetRankString() {

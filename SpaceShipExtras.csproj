@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ShipExperience\CombatPatches.cs" />
+    <Compile Include="ShipExperience\RankEffects.cs" />
     <Compile Include="Utility\ClearDebrisOperation.cs" />
     <Compile Include="Utility\DeepSpaceRepairFleetOperation.cs" />
     <Compile Include="Utility\Patches.cs" />
