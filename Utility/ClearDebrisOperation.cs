@@ -5,10 +5,10 @@ using PavonisInteractive.TerraInvicta;
 
 namespace SpaceShipExtras.Utility {
     class ClearDebrisOperation : TISpaceFleetOperationTemplate {
-        private static int CountFunctionalDebrisCleaner(TISpaceFleetState fleetState) {
+        private static int CountFunctionalDebrisCleaner(TISpaceFleetState fleet) {
             int count = 0;
 
-            foreach (var ship in fleetState.ref_fleet.ships) {
+            foreach (var ship in fleet.ships) {
                 foreach (var module in ship.GetFunctionalUtilitySlotModules(1f)) {
                     if (module.moduleTemplate as TIDebrisCleaner != null) {
                         count++; ;
@@ -19,12 +19,13 @@ namespace SpaceShipExtras.Utility {
             return count;
         }
 
-        private static bool HasFunctionalDebrisCleaner(TISpaceFleetState fleetState) {
-            return CountFunctionalDebrisCleaner(fleetState) > 0;
+        private static bool HasFunctionalDebrisCleaner(TISpaceFleetState fleet) {
+            return CountFunctionalDebrisCleaner(fleet) > 0;
         }
 
-        private static bool HasDebrisInCurrentOrbit(TISpaceFleetState fleetState) {
-            var orbit = fleetState.ref_orbit;
+        private static bool HasDebrisInCurrentOrbit(TISpaceFleetState fleet) {
+            var orbit = fleet.ref_orbit;
+
             if (orbit == null) {
                 return false;
             }
@@ -32,8 +33,9 @@ namespace SpaceShipExtras.Utility {
             return orbit.destroyedAssets > 0;
         }
 
-        private static void ClearDebrisInCurrrentOrbit(TISpaceFleetState fleetState) {
-            var orbit = fleetState.ref_orbit;
+        private static void ClearDebrisInCurrrentOrbit(TISpaceFleetState fleet) {
+            var orbit = fleet.ref_orbit;
+
             if (orbit == null) {
                 return;
             }
@@ -43,33 +45,36 @@ namespace SpaceShipExtras.Utility {
             }
         }
 
-        private static float NeedDeltaVToExecute(TISpaceFleetState fleetState) {
-            var orbit = fleetState.ref_orbit;
+        private static float NeedDeltaVToExecute(TISpaceFleetState fleet) {
+            var orbit = fleet.ref_orbit;
+
             if (orbit == null) {
                 return 0;
             }
 
-            return orbit.circumference_km / 1000 / CountFunctionalDebrisCleaner(fleetState);
+            return orbit.circumference_km / 1000 / CountFunctionalDebrisCleaner(fleet);
         }
 
-        private static bool FleetHasDeltaVToExecute(TISpaceFleetState fleetState) {
-            return fleetState.currentDeltaV_kps > NeedDeltaVToExecute(fleetState);
+        private static bool FleetHasDeltaVToExecute(TISpaceFleetState fleet) {
+            return fleet.currentDeltaV_kps > NeedDeltaVToExecute(fleet);
         }
 
-        private static float TimeToExecute(TISpaceFleetState fleetState) {
-            var orbit = fleetState.ref_orbit;
+        private static float TimeToExecute(TISpaceFleetState fleet) {
+            var orbit = fleet.ref_orbit;
+
             if (orbit == null) {
                 return 0;
             }
 
-            return orbit.circumference_km / 1000 / CountFunctionalDebrisCleaner(fleetState);
+            return orbit.circumference_km / 1000 / CountFunctionalDebrisCleaner(fleet);
         }
 
-        private static void LogClearDebrisCOmplete(TISpaceFleetState fleet) {
+        private static void LogClearDebrisComplete(TISpaceFleetState fleet) {
             NotificationQueueItem notificationQueueItem =
                 typeof(TINotificationQueueState)
                 .GetMethod("InitItem", BindingFlags.NonPublic | BindingFlags.Static)
                 .Invoke(null, new object[] { }) as NotificationQueueItem;
+
             notificationQueueItem.alertFactions.Add(fleet.faction);
             notificationQueueItem.logFactions = notificationQueueItem.alertFactions;
             notificationQueueItem.icon = fleet.iconResource;
@@ -93,6 +98,7 @@ namespace SpaceShipExtras.Utility {
                 fleet.GetDisplayName(TINotificationQueueState.activePlayer),
                 TIUtilities.GetLocationString(fleet.location, true, true)
             });
+
             typeof(TINotificationQueueState)
                 .GetMethod("AddItem", BindingFlags.NonPublic | BindingFlags.Static)
                 .Invoke(null, new object[] { notificationQueueItem, false, null });
@@ -108,31 +114,29 @@ namespace SpaceShipExtras.Utility {
             return true;
         }
 
-        public override bool RequiresThrustProfile() {
-            return false;
+        public override bool OpVisibleToActor(TIGameState actor, TIGameState target = null) {
+            return HasFunctionalDebrisCleaner(actor.ref_fleet);
         }
 
-        public override bool OpVisibleToActor(TIGameState actorState, TIGameState targetState = null) {
-            TISpaceFleetState ref_fleet = actorState.ref_fleet;
-            return HasFunctionalDebrisCleaner(ref_fleet);
-        }
+        public override bool ActorCanPerformOperation(TIGameState actor, TIGameState target = null) {
+            TISpaceFleetState fleet = actor.ref_fleet;
 
-        public override bool ActorCanPerformOperation(TIGameState actorState, TIGameState targetState = null) {
-            if (!base.ActorCanPerformOperation(actorState, targetState)) {
+            if (!base.ActorCanPerformOperation(actor, target)) {
                 return false;
             }
-            TISpaceFleetState ref_fleet = actorState.ref_fleet;
+            
             return (
-                HasFunctionalDebrisCleaner(ref_fleet) &&
-                HasDebrisInCurrentOrbit(ref_fleet) &&
-                FleetHasDeltaVToExecute(ref_fleet) &&
-                !ref_fleet.transferAssigned &&
-                !ref_fleet.inCombat);
+                HasFunctionalDebrisCleaner(fleet) &&
+                HasDebrisInCurrentOrbit(fleet) &&
+                FleetHasDeltaVToExecute(fleet) &&
+                !fleet.transferAssigned &&
+                !fleet.inCombat);
         }
 
-        public override List<TIGameState> GetPossibleTargets(TIGameState actorState, TIGameState defaultTarget = null) {
+        public override List<TIGameState> GetPossibleTargets(TIGameState actor,
+                                                             TIGameState defaultTarget = null) {
             return new List<TIGameState> {
-                actorState
+                actor
             };
         }
 
@@ -141,18 +145,19 @@ namespace SpaceShipExtras.Utility {
         }
 
 
-        public override float GetDuration_days(TIGameState actorState, TIGameState target, Trajectory trajectory = null) {
-            TISpaceFleetState ref_fleet = actorState.ref_fleet;
-            return TimeToExecute(ref_fleet);
+        public override float GetDuration_days(TIGameState actor,
+                                               TIGameState target,
+                                               Trajectory trajectory = null) {
+            return TimeToExecute(actor.ref_fleet);
         }
 
-        public override void ExecuteOperation(TIGameState actorState, TIGameState target) {
-            TISpaceFleetState ref_fleet = actorState.ref_fleet;
-            ref_fleet.ships.ForEach(delegate (TISpaceShipState x) {
-                x.ConsumeDeltaV(NeedDeltaVToExecute(ref_fleet), true, true);
-            });
-            ClearDebrisInCurrrentOrbit(ref_fleet);
-            LogClearDebrisCOmplete(ref_fleet);
+        public override void ExecuteOperation(TIGameState actor, TIGameState target) {
+            TISpaceFleetState fleet = actor.ref_fleet;
+            foreach (var ship in fleet.ships) {
+                ship.ConsumeDeltaV(NeedDeltaVToExecute(fleet), true, true);
+            }
+            ClearDebrisInCurrrentOrbit(fleet);
+            LogClearDebrisComplete(fleet);
         }
 
         public override OperationTiming GetOperationTiming() {

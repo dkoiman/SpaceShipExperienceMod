@@ -4,7 +4,7 @@ using PavonisInteractive.TerraInvicta;
 namespace SpaceShipExtras.ShipExperience {
     public class SpaceShipExperienceManager {
 
-        private Dictionary<GameStateID, TISpaceShipExperienceState> 
+        private Dictionary<GameStateID, TISpaceShipExperienceState>
             spaceShipExperienceMapping =
             new Dictionary<GameStateID, TISpaceShipExperienceState>();
 
@@ -26,16 +26,21 @@ namespace SpaceShipExtras.ShipExperience {
             if (!Main.enabled) {
                 return ship.GetDisplayName(GameControl.control.activePlayer);
             }
+
             if (rank_first) {
-                return this[ship].GetRankString() + " " + ship.GetDisplayName(GameControl.control.activePlayer);
+                return (this[ship].GetRankString() + " " +
+                        ship.GetDisplayName(GameControl.control.activePlayer));
             }
-            return ship.GetDisplayName(GameControl.control.activePlayer) + " " + this[ship].GetRankString();
+
+            return (ship.GetDisplayName(GameControl.control.activePlayer) + " " +
+                    this[ship].GetRankString());
         }
 
         public int GetRank(TISpaceShipState ship) {
             if (!Main.enabled) {
                 return 0;
             }
+
             return this[ship].GetRank();
         }
 
@@ -43,6 +48,7 @@ namespace SpaceShipExtras.ShipExperience {
             if (!Main.enabled) {
                 return 0;
             }
+
             return this[ship].experience;
         }
 

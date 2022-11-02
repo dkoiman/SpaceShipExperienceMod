@@ -9,11 +9,11 @@ namespace SpaceShipExtras.ShipExperience {
             this.terminalController = terminalController;
             this.terminalController.RegisterCommand(
                 "GiveShipExp",
-                new CommandHandler(this.MySimpleCommand),
+                new CommandHandler(this.GiveShipExp),
                 "Gives experience to a ship in the selected fleet `GiveShipExp <ship_name> <exp>`");
         }
 
-        public void MySimpleCommand(string[] args) {
+        public void GiveShipExp(string[] args) {
             TIGameState asset = GeneralControlsController.UISelectedAssetState;
             if (!asset.isSpaceFleetState || asset.ref_fleet == null) {
                 terminalController.OutputError("Selected object is not a fleet.");

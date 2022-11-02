@@ -6,10 +6,10 @@ using PavonisInteractive.TerraInvicta;
 namespace SpaceShipExtras.Utility {
     class DeepSpaceRepairFleetOperation : TISpaceFleetOperationTemplate {
 
-        private static int CountFunctionalDeepSpaceRescueBays(TISpaceFleetState fleetState) {
+        private static int CountFunctionalDeepSpaceRescueBays(TISpaceFleetState fleet) {
             int count = 0;
 
-            foreach (var ship in fleetState.ref_fleet.ships) {
+            foreach (var ship in fleet.ships) {
                 foreach (var module in ship.GetFunctionalUtilitySlotModules(1f)) {
                     if (module.moduleTemplate as TIDeepSpaceRepairBay != null) {
                         count++; ;
@@ -20,15 +20,15 @@ namespace SpaceShipExtras.Utility {
             return count;
         }
 
-        private static bool HasFunctionalDeepSpaceRescueBay(TISpaceFleetState fleetState) {
-            return CountFunctionalDeepSpaceRescueBays(fleetState) > 0;
+        private static bool HasFunctionalDeepSpaceRescueBay(TISpaceFleetState fleet) {
+            return CountFunctionalDeepSpaceRescueBays(fleet) > 0;
         }
 
-        private static Dictionary<TISpaceShipState, TIResourcesCost> EssentialRepairsCost(TISpaceFleetState fleetState) {
+        private static Dictionary<TISpaceShipState, TIResourcesCost> EssentialRepairsCost(TISpaceFleetState fleet) {
             Dictionary<TISpaceShipState, TIResourcesCost> result =
                 new Dictionary<TISpaceShipState, TIResourcesCost>();
 
-            foreach (var ship in fleetState.ships) {
+            foreach (var ship in fleet.ships) {
                 TIResourcesCost essentialRepairs = new TIResourcesCost();
 
                 var damagedSystems =
@@ -68,6 +68,7 @@ namespace SpaceShipExtras.Utility {
                 .GetType()
                 .GetField("damagedSystems", BindingFlags.NonPublic | BindingFlags.Instance)
                 .GetValue(ship) as Dictionary<ShipSystem, float>;
+
             if (damagedSystems.ContainsKey(ShipSystem.DriveCoupling)) {
                 ship.plannedResupplyAndRepair.AddSystemToRepair(ShipSystem.DriveCoupling);
             }
@@ -84,8 +85,8 @@ namespace SpaceShipExtras.Utility {
             }
         }
 
-        private static bool HasEssentialRepairs(TISpaceFleetState fleetState) {
-            return EssentialRepairsCost(fleetState).Count > 0;
+        private static bool HasEssentialRepairs(TISpaceFleetState fleet) {
+            return EssentialRepairsCost(fleet).Count > 0;
         }
 
         public static void LogOurFleetRepaired(TISpaceFleetState fleet) {
@@ -93,6 +94,7 @@ namespace SpaceShipExtras.Utility {
                 typeof(TINotificationQueueState)
                 .GetMethod("InitItem", BindingFlags.NonPublic | BindingFlags.Static)
                 .Invoke(null, new object[] { }) as NotificationQueueItem;
+
             notificationQueueItem.alertFactions.Add(fleet.faction);
             notificationQueueItem.logFactions = notificationQueueItem.alertFactions;
             notificationQueueItem.icon = fleet.iconResource;
@@ -114,9 +116,21 @@ namespace SpaceShipExtras.Utility {
                 fleet.location.GetDisplayName(TINotificationQueueState.activePlayer)
             });
             notificationQueueItem.soundToPlay = "event:/SFX/UI_SFX/trig_SFX_RepairsComplete";
+
             typeof(TINotificationQueueState)
                 .GetMethod("AddItem", BindingFlags.NonPublic | BindingFlags.Static)
                 .Invoke(null, new object[] { notificationQueueItem, false, null });
+        }
+
+        public static TIResourcesCost ExpectedCost(TISpaceFleetState fleetState) {
+            TIResourcesCost tiresourcesCost = new TIResourcesCost();
+            var essentialRepairs = EssentialRepairsCost(fleetState);
+            foreach (var cost in essentialRepairs) {
+                tiresourcesCost.SumCosts(cost.Value);
+                tiresourcesCost.SetCompletionTime_Days(tiresourcesCost.completionTime_days + cost.Value.completionTime_days);
+            }
+            tiresourcesCost.SetCompletionTime_Days(tiresourcesCost.completionTime_days * 4 / CountFunctionalDeepSpaceRescueBays(fleetState));
+            return tiresourcesCost;
         }
 
         // Overrides
@@ -133,15 +147,11 @@ namespace SpaceShipExtras.Utility {
             return true;
         }
 
-        public override bool CancelUponDepartHab() {
-            return false;
-        }
-
         public override bool CancelUponCombat() {
             return true;
         }
 
-        public override float GetDuration_days(TIGameState actorState, TIGameState target, Trajectory trajectory = null) {
+        public override float GetDuration_days(TIGameState actor, TIGameState target, Trajectory trajectory = null) {
             return -1f;
         }
 
@@ -153,35 +163,37 @@ namespace SpaceShipExtras.Utility {
             return 7;
         }
 
-        public override List<TIGameState> GetPossibleTargets(TIGameState actorState, TIGameState defaultTarget = null) {
+        public override List<TIGameState> GetPossibleTargets(TIGameState actor, TIGameState defaultTarget = null) {
             return new List<TIGameState> {
-                actorState
+                actor
             };
         }
 
-        public override bool OpVisibleToActor(TIGameState actorState, TIGameState targetState = null) {
-            TISpaceFleetState ref_fleet = actorState.ref_fleet;
-            return HasFunctionalDeepSpaceRescueBay(ref_fleet) && !ref_fleet.dockedAtHab;
+        public override bool OpVisibleToActor(TIGameState actor, TIGameState target = null) {
+            return HasFunctionalDeepSpaceRescueBay(actor.ref_fleet);
         }
 
-        public override bool ActorCanPerformOperation(TIGameState actorState, TIGameState target) {
-            if (!base.ActorCanPerformOperation(actorState, target)) {
+        public override bool ActorCanPerformOperation(TIGameState actor, TIGameState target) {
+            if (!base.ActorCanPerformOperation(actor, target)) {
                 return false;
             }
-            TISpaceFleetState ref_fleet = actorState.ref_fleet;
+            TISpaceFleetState fleet = actor.ref_fleet;
             return
-                HasEssentialRepairs(ref_fleet) &&
-                HasFunctionalDeepSpaceRescueBay(ref_fleet) &&
-                ref_fleet.CanAffordAnyRepairs() &&
-                !ref_fleet.transferAssigned &&
-                !ref_fleet.inCombat &&
-                !ref_fleet.dockedAtHab;
+                HasEssentialRepairs(fleet) &&
+                HasFunctionalDeepSpaceRescueBay(fleet) &&
+                fleet.CanAffordAnyRepairs() &&
+                !fleet.transferAssigned &&
+                !fleet.inCombat &&
+                !fleet.dockedAtHab;
         }
 
-        public override List<TIResourcesCost> ResourceCostOptions(TIFactionState faction, TIGameState target, TIGameState actor, bool checkCanAfford = true) {
+        public override List<TIResourcesCost> ResourceCostOptions(TIFactionState faction,
+                                                                  TIGameState target,
+                                                                  TIGameState actor,
+                                                                  bool checkCanAfford = true) {
             if (actor.isSpaceFleetState) {
                 return new List<TIResourcesCost>(1) {
-                    DeepSpaceRepairFleetOperation.ExpectedCost(actor.ref_fleet, actor.ref_fleet.ref_hab)
+                    DeepSpaceRepairFleetOperation.ExpectedCost(actor.ref_fleet)
                 };
             }
             return null;
@@ -191,62 +203,59 @@ namespace SpaceShipExtras.Utility {
             return true;
         }
 
-        public static TIResourcesCost ExpectedCost(TISpaceFleetState fleetState, TIHabState hab) {
+        public override bool OnOperationConfirm(TIGameState actor,
+                                                TIGameState target,
+                                                TIResourcesCost resourcesCost = null,
+                                                Trajectory trajectory = null) {
+            TISpaceFleetState fleet = actor.ref_fleet;
             TIResourcesCost tiresourcesCost = new TIResourcesCost();
-            var essentialRepairs = EssentialRepairsCost(fleetState);
-            foreach (var cost in essentialRepairs) {
-                tiresourcesCost.SumCosts(cost.Value);
-                tiresourcesCost.SetCompletionTime_Days(tiresourcesCost.completionTime_days + cost.Value.completionTime_days);
-            }
-            tiresourcesCost.SetCompletionTime_Days(tiresourcesCost.completionTime_days * 4 / CountFunctionalDeepSpaceRescueBays(fleetState));
-            return tiresourcesCost;
-        }
+            var essentialRepairs = EssentialRepairsCost(fleet);
 
-        public override bool OnOperationConfirm(TIGameState actorState, TIGameState target, TIResourcesCost resourcesCost = null, Trajectory trajectory = null) {
-            TISpaceFleetState fleetState = actorState.ref_fleet;
-            TIResourcesCost tiresourcesCost = new TIResourcesCost();
-            var essentialRepairs = EssentialRepairsCost(fleetState);
             foreach (var cost in essentialRepairs) {
                 if (!cost.Value.CanAfford(cost.Key.faction, 1f, null, float.PositiveInfinity)) {
                     continue;
                 }
+
                 ScheduleEssentialRepairs(cost.Key);
                 tiresourcesCost.SumCosts(cost.Value);
-                tiresourcesCost.SetCompletionTime_Days(tiresourcesCost.completionTime_days + cost.Value.completionTime_days); 
+                tiresourcesCost.SetCompletionTime_Days(
+                    tiresourcesCost.completionTime_days + cost.Value.completionTime_days); 
             }
-            tiresourcesCost.SetCompletionTime_Days(tiresourcesCost.completionTime_days * 4 / CountFunctionalDeepSpaceRescueBays(fleetState));
-            return base.OnOperationConfirm(actorState, target, tiresourcesCost, trajectory);
+
+            tiresourcesCost.SetCompletionTime_Days(
+                tiresourcesCost.completionTime_days * 4 / CountFunctionalDeepSpaceRescueBays(fleet));
+
+            return base.OnOperationConfirm(actor, target, tiresourcesCost, trajectory);
         }
 
-        public override void ExecuteOperation(TIGameState actorState, TIGameState target) {
-            TISpaceFleetState ref_fleet = actorState.ref_fleet;
-            if (HasFunctionalDeepSpaceRescueBay(ref_fleet) &&
-                !ref_fleet.inCombat &&
-                ref_fleet.CanAffordAnyRepairs() &&
-                !ref_fleet.transferAssigned &&
-                !ref_fleet.dockedAtHab) {
-                foreach (TISpaceShipState tispaceShipState in ref_fleet.ships) {
-                    tispaceShipState.plannedResupplyAndRepair.ProcessResupplyAndRepair(tispaceShipState);
+        public override void ExecuteOperation(TIGameState actor, TIGameState target) {
+            TISpaceFleetState fleet = actor.ref_fleet;
+
+            if (HasFunctionalDeepSpaceRescueBay(fleet) &&
+                fleet.CanAffordAnyRepairs() &&
+                !fleet.inCombat &&
+                !fleet.transferAssigned &&
+                !fleet.dockedAtHab) {
+                foreach (var ship in fleet.ships) {
+                    ship.plannedResupplyAndRepair.ProcessResupplyAndRepair(ship);
                 }
-                LogOurFleetRepaired(ref_fleet);
+                LogOurFleetRepaired(fleet);
                 return;
             }
 
-            foreach (TISpaceShipState tispaceShipState2 in ref_fleet.ships) {
-                tispaceShipState2.plannedResupplyAndRepair.CancelRepair(ref_fleet.faction);
+            foreach (var ship in fleet.ships) {
+                ship.plannedResupplyAndRepair.CancelRepair(fleet.faction);
             }
         }
 
-        public override void OnOperationCancel(TIGameState actorState, TIGameState target, TIDateTime opCompleteDate) {
-            base.OnOperationCancel(actorState, target, opCompleteDate);
-            actorState.ref_fleet.ships.ForEach(delegate (TISpaceShipState x)
-            {
-                x.plannedResupplyAndRepair.CancelRepair(actorState.ref_faction);
-            });
-        }
+        public override void OnOperationCancel(TIGameState actor,
+                                               TIGameState target,
+                                               TIDateTime opCompleteDate) {
+            base.OnOperationCancel(actor, target, opCompleteDate);
 
-        public override List<System.Type> BreakthroughOps() {
-            return new List<System.Type> { };
+            foreach (var ship in actor.ref_fleet.ships) {
+                ship.plannedResupplyAndRepair.CancelRepair(actor.ref_faction);
+            };
         }
     }
 }

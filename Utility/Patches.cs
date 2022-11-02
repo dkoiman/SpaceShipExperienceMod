@@ -38,9 +38,9 @@ namespace SpaceShipExtras.Utility {
     [HarmonyPatch(typeof(OperationsManager), "Initalize")]
     static class OperationManager_Initalize_Patch {
         static void Postfix() {
-            DeepSpaceRepairFleetOperation deepSpaceReapir = new DeepSpaceRepairFleetOperation();
-            OperationsManager.fleetOperations.Add(deepSpaceReapir);
-            OperationsManager.operationsLookup.Add(deepSpaceReapir.GetType(), deepSpaceReapir);
+            DeepSpaceRepairFleetOperation deepSpaceRepair = new DeepSpaceRepairFleetOperation();
+            OperationsManager.fleetOperations.Add(deepSpaceRepair);
+            OperationsManager.operationsLookup.Add(deepSpaceRepair.GetType(), deepSpaceRepair);
 
             ClearDebrisOperation clearDebris = new ClearDebrisOperation();
             OperationsManager.fleetOperations.Add(clearDebris);

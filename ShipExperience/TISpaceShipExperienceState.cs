@@ -1,7 +1,6 @@
-﻿using HarmonyLib;
+﻿using UnityEngine;
+
 using PavonisInteractive.TerraInvicta;
-using PavonisInteractive.TerraInvicta.Entities;
-using UnityEngine;
 
 
 namespace SpaceShipExtras.ShipExperience {
@@ -24,7 +23,7 @@ namespace SpaceShipExtras.ShipExperience {
         public int experience { get;  private set; } = 0;
 
         public void AddExperience(int exp) {
-            experience += exp;
+            this.experience += exp;
         }
 
         public int GetRank() {

@@ -32,12 +32,15 @@ namespace SpaceShipExtras.ShipExperience {
             if (__instance.nShipyardQueues[shipyardIdx].Count == 0) {
                 return;
             }
+
             if (item == null) {
                 item = __instance.nShipyardQueues[shipyardIdx][0];
             }
+
             if (!item.isRefit) {
                 return;
             }
+
             RefitExperienceState.expMap.Add(
                 item.originalSpaceShipState.displayName,
                 Main.experienceManager.GetExperience(item.originalSpaceShipState));

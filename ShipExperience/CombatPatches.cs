@@ -87,7 +87,9 @@ namespace SpaceShipExtras.ShipExperience {
             }
         }
 
-        static void EvalResult(TISpaceFleetState thisFleet, TISpaceFleetState otherFleet, RankEffects.Outcome outcome) {
+        static void EvalResult(TISpaceFleetState thisFleet,
+                               TISpaceFleetState otherFleet,
+                               RankEffects.Outcome outcome) {
             if (thisFleet == null) {
                 return;
             }

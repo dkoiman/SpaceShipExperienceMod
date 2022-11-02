@@ -43,6 +43,7 @@ namespace SpaceShipExtras.ShipExperience {
             if (!gameState.isSpaceShipState) {
                 return;
             }
+
             __instance.shipName.SetText(Main.experienceManager.GetNameRankString(__instance.ship), true);
         }
     }
@@ -72,6 +73,7 @@ namespace SpaceShipExtras.ShipExperience {
                 .GetType()
                 .GetField("shipState", BindingFlags.NonPublic | BindingFlags.Instance)
                 .GetValue(__instance) as TISpaceShipState;
+
             __instance.shipName.SetText(Main.experienceManager.GetNameRankString(ship), true);
         }
     }
@@ -101,6 +103,7 @@ namespace SpaceShipExtras.ShipExperience {
                 .GetType()
                 .GetProperty("ship", BindingFlags.NonPublic | BindingFlags.Instance)
                 .GetValue(__instance) as TISpaceShipState;
+
             __instance.shipName.SetText(Main.experienceManager.GetNameRankString(ship), true);
         }
     }
@@ -114,6 +117,7 @@ namespace SpaceShipExtras.ShipExperience {
             if (ship == null) {
                 return;
             }
+
             __instance.shipName.SetText(Main.experienceManager.GetNameRankString(ship), true);
         }
     }
@@ -125,6 +129,7 @@ namespace SpaceShipExtras.ShipExperience {
             if (item.asset == null || !item.asset.isSpaceShipState) {
                 return;
             }
+
             __instance.itemName.SetText(Main.experienceManager.GetNameRankString(item.asset.ref_ship), true);
         }
     }
@@ -136,11 +141,13 @@ namespace SpaceShipExtras.ShipExperience {
             if (__instance.combatantType != IDamageableType.Ship) {
                 return;
             }
+
             TISpaceShipState ship =
                 __instance
                 .GetType()
                 .GetField("shipState", BindingFlags.NonPublic | BindingFlags.Instance)
                 .GetValue(__instance) as TISpaceShipState;
+
             __instance.shipName.SetText(
                 new StringBuilder(ship.hull.displayName)
                 .Append(" ")
@@ -153,6 +160,7 @@ namespace SpaceShipExtras.ShipExperience {
     static class SpaceCombatCanvasController_SetSelectedShipPanel_Patch {
         static void Postfix(ref SpaceCombatCanvasController __instance) {
             TISpaceShipState ship = __instance.selectedFriendlyShipState;
+
             __instance.selectedShipName.SetText(
                 new StringBuilder(ship.hull.displayName)
                 .Append(" ")

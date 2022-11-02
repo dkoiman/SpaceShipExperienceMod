@@ -13,9 +13,6 @@ namespace SpaceShipExtras.ShipExperience {
         }
 
         public static void BoostOpinion(TIFactionState faction, float propaganda) {
-            if (faction == null) {
-                return;
-            }
             TIEffectsState.ProcessInstantEffect(
                 faction,
                 EffectTargetType.AllNations,
@@ -26,7 +23,12 @@ namespace SpaceShipExtras.ShipExperience {
 
         public static void DispatchResults(TIFactionState faction,
                                            Dictionary<TISpaceShipState, int> ranks,
-                                           float powerBalance, Outcome outcome) {
+                                           float powerBalance,
+                                           Outcome outcome) {
+            if (!Main.enabled || faction == null) {
+                return;
+            }
+
             int maxRank = ranks.Values.Max();
             float propaganda = maxRank * maxRank / 5 * powerBalance;
 
