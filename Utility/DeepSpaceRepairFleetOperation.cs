@@ -289,7 +289,6 @@ namespace SpaceShipExtras.Utility {
             TISpaceFleetState fleet = actor.ref_fleet;
 
             if (HasFunctionalDeepSpaceRepairBay(fleet) &&
-                fleet.CanAffordAnyRepairs() &&
                 !fleet.inCombat &&
                 !fleet.transferAssigned &&
                 !fleet.dockedAtHab) {

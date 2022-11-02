@@ -37,6 +37,9 @@ namespace SpaceShipExtras.ShipExperience {
     // will start processing the refit events in parallel, there is a very small
     // chance that two ships with the equivalent display name will get done at
     // the same time unless it is manually orchestrated.
+    //
+    // As a secondary effect, we are refunding the cost of fuel of the original
+    // ship, since vanilla game just counts it as lost.
     [HarmonyPatch(typeof(TIFactionState), "CompleteShipConstruction")]
     static class TIFactionState_CompleteShipConstruction_Patch {
         static void Prefix(TIFactionState __instance, TIHabModuleState shipyardIdx, ShipConstructionQueueItem item) {
@@ -52,9 +55,16 @@ namespace SpaceShipExtras.ShipExperience {
                 return;
             }
 
+            TISpaceShipState ship = item.originalSpaceShipState;
+
+            // Preserve experience.
             RefitExperienceState.expMap.Add(
-                item.originalSpaceShipState.displayName,
+                ship.displayName,
                 Main.experienceManager.GetExperience(item.originalSpaceShipState));
+
+            // Refund fuel.
+            ship.GetPreferredPropellantTankCost(ship.faction, ship.propellant_tons)
+                .RefundCost(ship.faction);
         }
     }
 
