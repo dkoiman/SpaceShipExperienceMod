@@ -209,7 +209,7 @@ namespace SpaceShipExtras.Utility {
                 !fleet.transferAssigned &&
                 !fleet.inCombat &&
                 (!fleet.dockedAtHab ||
-                 fleet.ref_hab.AllowsShipConstruction(fleet.faction, false, false));
+                 !fleet.ref_hab.AllowsShipConstruction(fleet.faction, false, false));
         }
 
         // Since the targeting is 'self', the actor itself is the only target.
