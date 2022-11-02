@@ -1,5 +1,15 @@
 # Patchnotes
 
+## 0.0.6
+
+* Fixed a small bug with deep space repairs where it would not execute if
+  faction resources dropped a lot prior to the completion.
+* Fixed Deep Space Repair becoming unavailable next to a hab without ship
+  construction capabilities
+* Added fuel refunds on refit completion.
+* Added displaying support gain into post combat screen.
+* Otherwise mostly internal changes without visible effect
+
 ## 0.0.5
 
 * Fixed operations from special modules lingering during transfer.

@@ -20,6 +20,10 @@ from the save you made with the mod, you have to modify your save file to remove
 
 ## Features
 
+### Fuel Refund on Refit
+
+Well, the title speaks for itself :)
+
 ### Space ship experience
 
 #### Experience accumulation and ranks
