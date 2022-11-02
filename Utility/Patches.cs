@@ -4,6 +4,7 @@ using PavonisInteractive.TerraInvicta;
 
 namespace SpaceShipExtras.Utility {
 
+    // Special utility modules can only be mounted to a 'Utility Ship' hull.
     [HarmonyPatch(typeof(TISpaceShipTemplate), "ValidPartForDesign")]
     static class TISpaceShipTemplate_ValidPartForDesign_Patch {
         static bool Prefix(TISpaceShipTemplate __instance, TIShipPartTemplate part, ref bool __result) {
@@ -20,6 +21,8 @@ namespace SpaceShipExtras.Utility {
         }
     }
 
+    // Operation's icon image is not virtual, thus we need to highjack the
+    // function to route it into the mod's asset bundle.
     [HarmonyPatch(typeof(TIOperationTemplate), "get_operationIconImagePath")]
     static class TIOperationTemplate_get_operationIconImagePath_Patch {
         static bool Prefix(TIOperationTemplate __instance, ref string __result) {
@@ -35,6 +38,7 @@ namespace SpaceShipExtras.Utility {
         }
     }
 
+    // Register the newly added fleet operations.
     [HarmonyPatch(typeof(OperationsManager), "Initalize")]
     static class OperationManager_Initalize_Patch {
         static void Postfix() {
@@ -48,6 +52,8 @@ namespace SpaceShipExtras.Utility {
         }
     }
 
+    // Register the newly added template. ValidateAllTemplates is run after all
+    // templates are loaded by the game itself.
     [HarmonyPatch(typeof(TemplateManager), "ValidateAllTemplates")]
     static class TemplateManager_ValidateAllTemplates_Patch {
         // Intercept the method prior execution.
@@ -62,6 +68,10 @@ namespace SpaceShipExtras.Utility {
         }
     }
 
+    // Pretend that 'Utility Ship' is a 'Gunship'. Otherwise the engine model resolution
+    // code complains it can not find a proper asset for the engines. 'Utility Ship' is
+    // a dimilitarized copy-cat of 'Gunship' in general, so no problem with models'
+    // compatibility.
     [HarmonyPatch(typeof(TIDriveTemplate), "modelResource")]
     static class TIDriveTemplate_modelResource_Patch {
         static void Postfix(ref string __result) {

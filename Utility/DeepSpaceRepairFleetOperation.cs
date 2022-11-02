@@ -4,15 +4,21 @@ using System.Reflection;
 using PavonisInteractive.TerraInvicta;
 
 namespace SpaceShipExtras.Utility {
+    // Operation for performing essential repairs in deep space.
     class DeepSpaceRepairFleetOperation : TISpaceFleetOperationTemplate {
 
-        private static int CountFunctionalDeepSpaceRescueBays(TISpaceFleetState fleet) {
+        // Deep space repair take longer base time than repairs at habs.
+        private const float kRepairTimeMultipleier = 4;
+
+        // Scan all ships in the fleet to retrieve the number of functional
+        // DeepSpaceRepaireBay modules.
+        private static int CountFunctionalDeepSpaceRepairBays(TISpaceFleetState fleet) {
             int count = 0;
 
             foreach (var ship in fleet.ships) {
                 foreach (var module in ship.GetFunctionalUtilitySlotModules(1f)) {
                     if (module.moduleTemplate as TIDeepSpaceRepairBay != null) {
-                        count++; ;
+                        count++;
                     }
                 }
             }
@@ -20,23 +26,34 @@ namespace SpaceShipExtras.Utility {
             return count;
         }
 
-        private static bool HasFunctionalDeepSpaceRescueBay(TISpaceFleetState fleet) {
-            return CountFunctionalDeepSpaceRescueBays(fleet) > 0;
+        // Returns true if at least one ship in the fleet fits a functional
+        // DeepSpaceRepaireBay module.
+        private static bool HasFunctionalDeepSpaceRepairBay(TISpaceFleetState fleet) {
+            return CountFunctionalDeepSpaceRepairBays(fleet) > 0;
         }
 
+        // Calculate cost of essentials repairs for each ship in the fleet.
+        // Essential are the repairs for the internal systems and modules that
+        // are necessary for initiating orbital transfer of ships. Currently
+        // that includes
+        // * Drive Coupling subsystem
+        // * Drive module
+        // * Power Plant
+        // * Vector Thrusters subsystem - techically not required, but that is
+        //   likely a bug.
         private static Dictionary<TISpaceShipState, TIResourcesCost> EssentialRepairsCost(TISpaceFleetState fleet) {
             Dictionary<TISpaceShipState, TIResourcesCost> result =
                 new Dictionary<TISpaceShipState, TIResourcesCost>();
 
             foreach (var ship in fleet.ships) {
                 TIResourcesCost essentialRepairs = new TIResourcesCost();
-
                 var damagedSystems =
                     ship
                     .GetType()
                     .GetField("damagedSystems", BindingFlags.NonPublic | BindingFlags.Instance)
                     .GetValue(ship) as Dictionary<ShipSystem, float>;
 
+                // Each subsystem's base time-to-repair is 6 days in the vanilla game.
                 if (damagedSystems.ContainsKey(ShipSystem.DriveCoupling)) {
                     essentialRepairs.SumCosts(ship.SystemRepairCost(ShipSystem.DriveCoupling));
                     essentialRepairs.SetCompletionTime_Days(essentialRepairs.completionTime_days + 6f);
@@ -47,6 +64,7 @@ namespace SpaceShipExtras.Utility {
                     essentialRepairs.SetCompletionTime_Days(essentialRepairs.completionTime_days + 6f);
                 }
 
+                // Each module's base time-to-repair is 3 days in the vanilla game.
                 foreach (var part in ship.damagedParts) {
                     if (part.module.moduleTemplate.isDrive ||
                         part.module.moduleTemplate.isPowerPlant) {
@@ -55,13 +73,18 @@ namespace SpaceShipExtras.Utility {
                     }
                 }
 
-                if (essentialRepairs.completionTime_days > 0) {
+                // Include the ship into the resulting list if the ship has
+                // damage to any essential subsystems or modules.
+                if (essentialRepairs.completionTime_days > 0 &&
+                    essentialRepairs.CanAfford(ship.faction, 1f, null, float.PositiveInfinity)) {
                     result.Add(ship, essentialRepairs);
                 }
             }
             return result;
         }
 
+
+        // Mark all damaged essential systems as scheduled for repair.
         private static void ScheduleEssentialRepairs(TISpaceShipState ship) {
             var damagedSystems =
                 ship
@@ -85,10 +108,13 @@ namespace SpaceShipExtras.Utility {
             }
         }
 
+        // Returns true if at least one ship in the fleet has damage to
+        // essential systems.
         private static bool HasEssentialRepairs(TISpaceFleetState fleet) {
             return EssentialRepairsCost(fleet).Count > 0;
         }
 
+        // Show a notification screen upon operation completion.
         public static void LogOurFleetRepaired(TISpaceFleetState fleet) {
             NotificationQueueItem notificationQueueItem =
                 typeof(TINotificationQueueState)
@@ -122,71 +148,98 @@ namespace SpaceShipExtras.Utility {
                 .Invoke(null, new object[] { notificationQueueItem, false, null });
         }
 
+        // Evaluate the cost of essential repairs. Note, the vanilla game has
+        // some strange behaviour, where affordability of repairs is calculated
+        // in disconnect with total accumulated cost so far. We are pretty much
+        // doing the same.
         public static TIResourcesCost ExpectedCost(TISpaceFleetState fleetState) {
-            TIResourcesCost tiresourcesCost = new TIResourcesCost();
+            TIResourcesCost totalCost = new TIResourcesCost();
             var essentialRepairs = EssentialRepairsCost(fleetState);
+
             foreach (var cost in essentialRepairs) {
-                tiresourcesCost.SumCosts(cost.Value);
-                tiresourcesCost.SetCompletionTime_Days(tiresourcesCost.completionTime_days + cost.Value.completionTime_days);
+                totalCost.SumCosts(cost.Value);
+                totalCost.SetCompletionTime_Days(
+                    totalCost.completionTime_days + cost.Value.completionTime_days);
             }
-            tiresourcesCost.SetCompletionTime_Days(tiresourcesCost.completionTime_days * 4 / CountFunctionalDeepSpaceRescueBays(fleetState));
-            return tiresourcesCost;
+
+            totalCost.SetCompletionTime_Days(
+                totalCost.completionTime_days * kRepairTimeMultipleier /
+                CountFunctionalDeepSpaceRepairBays(fleetState));
+
+            return totalCost;
         }
 
         // Overrides
 
-        public override OperationTiming GetOperationTiming() {
-            return OperationTiming.DelayedExecutionOfInstantEffect;
-        }
-
-        public override bool IsBlockingOperation() {
-            return true;
-        }
-
-        public override bool UseResourceCostDuration() {
-            return true;
-        }
-
-        public override bool CancelUponCombat() {
-            return true;
-        }
-
-        public override float GetDuration_days(TIGameState actor, TIGameState target, Trajectory trajectory = null) {
-            return -1f;
-        }
-
-        public override System.Type GetTargetingMethod() {
-            return typeof(TIOperationTargeting_Self);
-        }
-
+        // Sort it next ot vanilla repair button.
         public override int SortOrder() {
             return 7;
         }
 
-        public override List<TIGameState> GetPossibleTargets(TIGameState actor, TIGameState defaultTarget = null) {
+        // Operation blocks other operations while waiting for resolution.
+        public override bool IsBlockingOperation() {
+            return true;
+        }
+
+        // The operation has resource cost.
+        public override bool HasResourceCost() {
+            return true;
+        }
+
+        // Operation is visible if there are any ships with the necessary
+        // module.
+        public override bool OpVisibleToActor(TIGameState actor, TIGameState target = null) {
+            return HasFunctionalDeepSpaceRepairBay(actor.ref_fleet);
+        }
+
+        // Operation is active if there are any ships with the necessary
+        // module, and a number of conditions take place. Repairs at hab
+        // supercede module's reapirs.
+        public override bool ActorCanPerformOperation(TIGameState actor, TIGameState target) {
+            TISpaceFleetState fleet = actor.ref_fleet;
+
+            if (!base.ActorCanPerformOperation(actor, target)) {
+                return false;
+            }
+
+            return
+                HasFunctionalDeepSpaceRepairBay(fleet) &&
+                HasEssentialRepairs(fleet) &&
+                fleet.CanAffordAnyRepairs() &&
+                !fleet.transferAssigned &&
+                !fleet.inCombat &&
+                (!fleet.dockedAtHab ||
+                 fleet.ref_hab.AllowsShipConstruction(fleet.faction, false, false));
+        }
+
+        // Since the targeting is 'self', the actor itself is the only target.
+        public override List<TIGameState> GetPossibleTargets(TIGameState actor,
+                                                             TIGameState defaultTarget = null) {
             return new List<TIGameState> {
                 actor
             };
         }
 
-        public override bool OpVisibleToActor(TIGameState actor, TIGameState target = null) {
-            return HasFunctionalDeepSpaceRescueBay(actor.ref_fleet);
+        // The fleet itself is a target of the operation.
+        public override System.Type GetTargetingMethod() {
+            return typeof(TIOperationTargeting_Self);
         }
 
-        public override bool ActorCanPerformOperation(TIGameState actor, TIGameState target) {
-            if (!base.ActorCanPerformOperation(actor, target)) {
-                return false;
-            }
-            TISpaceFleetState fleet = actor.ref_fleet;
-            return
-                HasEssentialRepairs(fleet) &&
-                HasFunctionalDeepSpaceRescueBay(fleet) &&
-                fleet.CanAffordAnyRepairs() &&
-                !fleet.transferAssigned &&
-                !fleet.inCombat &&
-                !fleet.dockedAtHab;
+        // This one is ignored when duration is taken from cost, but has to be
+        // overriden, because it is an abstract method.
+        public override float GetDuration_days(TIGameState actor,
+                                               TIGameState target,
+                                               Trajectory trajectory = null) {
+            return -1f;
         }
 
+        // Operation's duration should be retrieved from the resource cost.
+        public override bool UseResourceCostDuration() {
+            return true;
+        }
+
+        // The only cost option for the operation is calculated based on the
+        // required repairs.
         public override List<TIResourcesCost> ResourceCostOptions(TIFactionState faction,
                                                                   TIGameState target,
                                                                   TIGameState actor,
@@ -196,19 +249,20 @@ namespace SpaceShipExtras.Utility {
                     DeepSpaceRepairFleetOperation.ExpectedCost(actor.ref_fleet)
                 };
             }
+
             return null;
         }
 
-        public override bool HasResourceCost() {
-            return true;
-        }
-
+        // Schedule available essential repairs. Note, the vanilla game has
+        // some strange behaviour, where affordability of repairs is calculated
+        // in disconnect with total accumulated cost so far. We are pretty much
+        // doing the same.
         public override bool OnOperationConfirm(TIGameState actor,
                                                 TIGameState target,
                                                 TIResourcesCost resourcesCost = null,
                                                 Trajectory trajectory = null) {
             TISpaceFleetState fleet = actor.ref_fleet;
-            TIResourcesCost tiresourcesCost = new TIResourcesCost();
+            TIResourcesCost totalCost = new TIResourcesCost();
             var essentialRepairs = EssentialRepairsCost(fleet);
 
             foreach (var cost in essentialRepairs) {
@@ -217,21 +271,24 @@ namespace SpaceShipExtras.Utility {
                 }
 
                 ScheduleEssentialRepairs(cost.Key);
-                tiresourcesCost.SumCosts(cost.Value);
-                tiresourcesCost.SetCompletionTime_Days(
-                    tiresourcesCost.completionTime_days + cost.Value.completionTime_days); 
+                totalCost.SumCosts(cost.Value);
+                totalCost.SetCompletionTime_Days(
+                    totalCost.completionTime_days + cost.Value.completionTime_days); 
             }
 
-            tiresourcesCost.SetCompletionTime_Days(
-                tiresourcesCost.completionTime_days * 4 / CountFunctionalDeepSpaceRescueBays(fleet));
+            totalCost.SetCompletionTime_Days(
+                totalCost.completionTime_days * kRepairTimeMultipleier /
+                CountFunctionalDeepSpaceRepairBays(fleet));
 
-            return base.OnOperationConfirm(actor, target, tiresourcesCost, trajectory);
+            return base.OnOperationConfirm(actor, target, totalCost, trajectory);
         }
 
+        // When operation duration passes, check we are still in the valid state
+        // and then process repairs and display completeion notification.
         public override void ExecuteOperation(TIGameState actor, TIGameState target) {
             TISpaceFleetState fleet = actor.ref_fleet;
 
-            if (HasFunctionalDeepSpaceRescueBay(fleet) &&
+            if (HasFunctionalDeepSpaceRepairBay(fleet) &&
                 fleet.CanAffordAnyRepairs() &&
                 !fleet.inCombat &&
                 !fleet.transferAssigned &&
@@ -243,11 +300,13 @@ namespace SpaceShipExtras.Utility {
                 return;
             }
 
+            // If state is no longer valid, undo all repairs.
             foreach (var ship in fleet.ships) {
                 ship.plannedResupplyAndRepair.CancelRepair(fleet.faction);
             }
         }
 
+        // If operation is canceled, undo all repairs.
         public override void OnOperationCancel(TIGameState actor,
                                                TIGameState target,
                                                TIDateTime opCompleteDate) {
@@ -256,6 +315,16 @@ namespace SpaceShipExtras.Utility {
             foreach (var ship in actor.ref_fleet.ships) {
                 ship.plannedResupplyAndRepair.CancelRepair(actor.ref_faction);
             };
+        }
+
+        // Operation execution triggers after its "duration" cost passes.
+        public override OperationTiming GetOperationTiming() {
+            return OperationTiming.DelayedExecutionOfInstantEffect;
+        }
+
+        // Combat interferes with the operation.
+        public override bool CancelUponCombat() {
+            return true;
         }
     }
 }

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using PavonisInteractive.TerraInvicta;
 
 namespace SpaceShipExtras.ShipExperience {
+    // Stores the code for processing effects based on ships ranks and battles
+    // outcomes.
     class RankEffects {
         public enum Outcome {
             WIN,
@@ -32,10 +34,12 @@ namespace SpaceShipExtras.ShipExperience {
             int maxRank = ranks.Values.Max();
             float propaganda = maxRank * maxRank / 5 * powerBalance;
 
+            // If a human faction wins a battle - give it opinion boost.
             if (outcome == Outcome.WIN && !faction.IsAlienFaction) {
                 BoostOpinion(faction, propaganda);
             }
 
+            // If the aliens win a fight - boost its proxy and appeasers.
             if (outcome == Outcome.WIN && faction.IsAlienFaction) {
                 BoostOpinion(GameStateManager.AlienProxy(), propaganda);
                 BoostOpinion(GameStateManager.AlienAppeaser(), propaganda);

@@ -4,10 +4,9 @@ using HarmonyLib;
 using PavonisInteractive.TerraInvicta;
 using PavonisInteractive.TerraInvicta.Systems.Bootstrap;
 
-using SpaceShipExtras;
-
-
 namespace SpaceShipExtras.ShipExperience {
+
+    // Clear the mapping on loading the game.
     [HarmonyPatch(typeof(SolarSystemBootstrap), "LoadGame")]
     static class SolarSystemBootstrap_LoadGame_Patch {
         static void Prefix() {
@@ -15,6 +14,7 @@ namespace SpaceShipExtras.ShipExperience {
         }
     }
 
+    // Clear the mapping when game clears its state.
     [HarmonyPatch(typeof(ViewControl), "ClearGameData")]
     static class ViewControl_ClearGameData_Patch {
         static void Prefix() {
@@ -22,10 +22,21 @@ namespace SpaceShipExtras.ShipExperience {
         }
     }
 
+    // A global structurure to preserve the experience over refits.
     static class RefitExperienceState {
         public static Dictionary<string, int> expMap = new Dictionary<string, int>();
     }
 
+    // Before we start processing the refit event, we need to preserve the
+    // experience level of the original ship, for it will be destroyed within
+    // the body of the method before the new ship is created. We track the state
+    // by display name. While the method would not be reliable in general, it
+    // works fine here because all the refit events are processed sequentially.
+    // We could be ok with just a global int, but keeping the name in the
+    // mapping ensures we are accounting for the right ship - even if the game
+    // will start processing the refit events in parallel, there is a very small
+    // chance that two ships with the equivalent display name will get done at
+    // the same time unless it is manually orchestrated.
     [HarmonyPatch(typeof(TIFactionState), "CompleteShipConstruction")]
     static class TIFactionState_CompleteShipConstruction_Patch {
         static void Prefix(TIFactionState __instance, TIHabModuleState shipyardIdx, ShipConstructionQueueItem item) {
@@ -47,6 +58,8 @@ namespace SpaceShipExtras.ShipExperience {
         }
     }
 
+    // On SetDisplayName, if the name is equal to one we preserved in the
+    // mapping - transfer the experience to the ship and clear the mapping.
     [HarmonyPatch(typeof(TISpaceShipState), "SetDisplayName")]
     static class TISpaceShipState_SetDisplayName_Patch {
         static void Postfix(TISpaceShipState __instance, string newName) {
@@ -57,6 +70,7 @@ namespace SpaceShipExtras.ShipExperience {
         }
     }
 
+    // When a new ship instance is created, register it with the manager.
     [HarmonyPatch(typeof(TISpaceShipState), "InitWithTemplate")]
     static class TISpaceShipState_InitWithTemplate_Patch {
         static void Postfix(TIDataTemplate rawTemplate, TISpaceShipState __instance) {
@@ -66,6 +80,7 @@ namespace SpaceShipExtras.ShipExperience {
         }
     }
 
+    // When a ship is destroyed - unregister it from the manager.
     [HarmonyPatch(typeof(TISpaceShipState), "DestroyShip")]
     static class TISpaceShipState_DestroyShip_Patch {
         static void Postfix(ref TISpaceShipState __instance) {

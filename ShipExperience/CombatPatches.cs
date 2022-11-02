@@ -9,6 +9,8 @@ using PavonisInteractive.TerraInvicta;
 using PavonisInteractive.TerraInvicta.SpaceCombat.UI;
 
 namespace SpaceShipExtras.ShipExperience {
+    // Data, that needs to be carried over from the pre-combat state to the
+    // post-combat evaluation.
     static class PrecombatDataStash {
         public static TIFactionState factionA = null;
         public static TIFactionState factionB = null;
@@ -18,6 +20,12 @@ namespace SpaceShipExtras.ShipExperience {
         public static Dictionary<TISpaceShipState, int> ranksFactionB = new Dictionary<TISpaceShipState, int>();
     }
 
+    // During the combat ships get damaged and destroyed. That triggers changes
+    // in the power evaluation of the fleet and ship destruction will result in
+    // losing its rank information. So, we intercept a method that runs just
+    // prior the combat to capture the state of the combatants just before the
+    // battle commences. One of the combatants may be not a fleet, but a hub,
+    // and that adds a bit of the complications in doing some evaluations.
     [HarmonyPatch(typeof(PrecombatController), "FillOutCombatData")]
     static class PrecombatController_FillOutCombatData_Patch {
         static void Prefix(PrecombatController __instance) {
@@ -38,23 +46,33 @@ namespace SpaceShipExtras.ShipExperience {
             TIFactionState factionB = fleetFactionB?.faction;
             TIHabState hab = combat.hab;
 
+            // If there is no fleetA, we don't know factionA, but we know it
+            // must have a hab in the battle. Alternatively, if there is a
+            // hab and it belongs to factionA, we also have to account for its
+            // combat power.
             if (factionA == null || hab?.faction == factionA) {
                 factionA = hab.faction;
                 powerFactionA += hab.SpaceCombatValue();
             }
-
+            // If there is no fleetB, we don't know factionB, but we know it
+            // must have a hab in the battle. Alternatively, if there is a
+            // hab and it belongs to factionB, we also have to account for its
+            // combat power.
             if (factionB == null || hab?.faction == factionB) {
                 factionB = hab.faction;
                 powerFactionB += hab.SpaceCombatValue();
             }
 
+            // Account for fleetA power if present, and record all its ships'
+            // ranks.
             if (fleetFactionA != null) {
                 powerFactionA += fleetFactionA.SpaceCombatValue();
                 foreach (var ship in fleetFactionA.ships) {
                     PrecombatDataStash.ranksFactionA.Add(ship, Main.experienceManager.GetRank(ship));
                 }
             }
-
+            // Account for fleetB power if present, and record all its ships'
+            // ranks.
             if (fleetFactionB != null) {
                 powerFactionB += fleetFactionB.SpaceCombatValue();
                 foreach (var ship in fleetFactionB.ships) {
@@ -62,6 +80,7 @@ namespace SpaceShipExtras.ShipExperience {
                 }
             }
 
+            // Preserve the faction and power info.
             PrecombatDataStash.factionA = factionA;
             PrecombatDataStash.factionB = factionB;
             PrecombatDataStash.savedPrecombatPowerFactionA = powerFactionA;
@@ -69,8 +88,17 @@ namespace SpaceShipExtras.ShipExperience {
         }
     }
 
+    // Once the battle finishes, winner and loser are decided. Once that happens
+    // we execute our post-combat logic.
     [HarmonyPatch(typeof(TISpaceCombatState), "SetWinnerAndLoser")]
     static class TISpaceCombatState_SetWinnerAndLoser_Patch {
+        static void Postfix(TISpaceCombatState __instance) {
+            Process(__instance);
+            PrecombatDataStash.ranksFactionA.Clear();
+            PrecombatDataStash.ranksFactionB.Clear();
+        }
+
+        // Returns the winning fleet.
         static TISpaceFleetState WinnerFleet(TISpaceCombatState combat) {
             if (combat.fleets[0] != null) {
                 return combat.winner == combat.fleets[0].faction ? combat.fleets[0] : combat.fleets[1];
@@ -79,6 +107,7 @@ namespace SpaceShipExtras.ShipExperience {
             }
         }
 
+        // Returns the loosing fleet.
         static TISpaceFleetState LooserFleet(TISpaceCombatState combat) {
             if (combat.fleets[0] != null) {
                 return combat.loser == combat.fleets[0].faction ? combat.fleets[0] : combat.fleets[1];
@@ -87,13 +116,14 @@ namespace SpaceShipExtras.ShipExperience {
             }
         }
 
+        // Evaluate the effects of the battle on the specifi fleet.
         static void EvalResult(TISpaceFleetState thisFleet,
-                               TISpaceFleetState otherFleet,
                                RankEffects.Outcome outcome) {
             if (thisFleet == null) {
                 return;
             }
 
+            // Determine if the fleet was A or B side in the battle.
             bool evalFactionA = thisFleet.faction == PrecombatDataStash.factionA;
             float thisPower =
                 evalFactionA
@@ -104,12 +134,14 @@ namespace SpaceShipExtras.ShipExperience {
                 ? PrecombatDataStash.savedPrecombatPowerFactionB
                 : PrecombatDataStash.savedPrecombatPowerFactionA;
 
+            // Trigger rank effects for the fleet.
             RankEffects.DispatchResults(
                 evalFactionA ? PrecombatDataStash.factionA : PrecombatDataStash.factionB,
                 evalFactionA ? PrecombatDataStash.ranksFactionA : PrecombatDataStash.ranksFactionB,
                 otherPower / thisPower,
                 outcome);
 
+            // Grant experience for each surviving ship.
             var survivingShips =
                 from ship in thisFleet.ships
                 where !ship.ShipDestroyed()
@@ -128,6 +160,8 @@ namespace SpaceShipExtras.ShipExperience {
             }
         }
 
+        // Ignore evasions and mutual destructions. Evaluate effects on both
+        // combatants in other cases.
         static void Process(TISpaceCombatState combat) {
             if (combat.bothSidesDestroyed) {
                 return;
@@ -138,19 +172,13 @@ namespace SpaceShipExtras.ShipExperience {
             }
             
             if (combat.draw) {
-                EvalResult(combat.fleets[0], combat.fleets[1], RankEffects.Outcome.DRAW);
-                EvalResult(combat.fleets[1], combat.fleets[0], RankEffects.Outcome.DRAW);
+                EvalResult(combat.fleets[0], RankEffects.Outcome.DRAW);
+                EvalResult(combat.fleets[1], RankEffects.Outcome.DRAW);
                 return;
             } 
 
-            EvalResult(WinnerFleet(combat), LooserFleet(combat), RankEffects.Outcome.WIN);
-            EvalResult(LooserFleet(combat), WinnerFleet(combat), RankEffects.Outcome.LOSS);
-        }
-
-        static void Postfix(TISpaceCombatState __instance) {
-            Process(__instance);
-            PrecombatDataStash.ranksFactionA.Clear();
-            PrecombatDataStash.ranksFactionB.Clear();
+            EvalResult(WinnerFleet(combat), RankEffects.Outcome.WIN);
+            EvalResult(LooserFleet(combat), RankEffects.Outcome.LOSS);
         }
     }
 }
