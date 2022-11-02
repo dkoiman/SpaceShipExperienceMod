@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
 using HarmonyLib;
+using UnityEngine;
 
 using PavonisInteractive.TerraInvicta;
 using PavonisInteractive.TerraInvicta.SpaceCombat.UI;
@@ -18,6 +20,11 @@ namespace SpaceShipExtras.ShipExperience {
         public static float savedPrecombatPowerFactionB;
         public static Dictionary<TISpaceShipState, int> ranksFactionA = new Dictionary<TISpaceShipState, int>();
         public static Dictionary<TISpaceShipState, int> ranksFactionB = new Dictionary<TISpaceShipState, int>();
+    }
+
+    public static class PostcombatReportStash {
+        public static bool playerFactionWin = false;
+        public static float propagandaGain = 0;
     }
 
     // During the combat ships get damaged and destroyed. That triggers changes
@@ -85,6 +92,41 @@ namespace SpaceShipExtras.ShipExperience {
             PrecombatDataStash.factionB = factionB;
             PrecombatDataStash.savedPrecombatPowerFactionA = powerFactionA;
             PrecombatDataStash.savedPrecombatPowerFactionB = powerFactionB;
+        }
+    }
+
+    // Add RankEffect outcomes to Post Combat UI
+    [HarmonyPatch(typeof(PrecombatController), "OnCombatComplete")]
+    [HarmonyPatch(new Type[] { typeof(TISpaceCombatState) })]
+    static class PrecombatController_OnCombatComplete_Patch {
+        static bool withinPostCombat = false;
+
+        static void Prefix() { withinPostCombat = true; }
+        static void Postfix() { withinPostCombat = false; }
+
+        [HarmonyPatch(typeof(TIResourcesCost), "ToString")]
+        static class TIResourcesCost_ToString_Patch {
+            static void Postfix(ref string __result) {
+                if (!withinPostCombat ||
+                    !PostcombatReportStash.playerFactionWin ||
+                    PostcombatReportStash.propagandaGain < 0.001) {
+                    return;
+                }
+
+                __result =
+                    new StringBuilder()
+                    .Append(__result)
+                    .AppendLine()
+                    .AppendLine(
+                        Loc.T(
+                            "UI.SpaceCombat.Outcome.Propaganda",
+                            new object [] {
+                                PostcombatReportStash.propagandaGain.ToString("N3")
+                            }))
+                    .ToString();
+
+                PostcombatReportStash.playerFactionWin = false;
+            }
         }
     }
 
@@ -163,6 +205,7 @@ namespace SpaceShipExtras.ShipExperience {
         // Ignore evasions and mutual destructions. Evaluate effects on both
         // combatants in other cases.
         static void Process(TISpaceCombatState combat) {
+            PostcombatReportStash.playerFactionWin = false;
             if (combat.bothSidesDestroyed) {
                 return;
             }

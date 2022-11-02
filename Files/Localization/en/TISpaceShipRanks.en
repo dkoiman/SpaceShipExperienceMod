@@ -4,3 +4,5 @@ TISpaceShipRank.Rank_2=Veteran
 TISpaceShipRank.Rank_3=Elite
 TISpaceShipRank.Rank_4=Hero
 TISpaceShipRank.Rank_5=Legend
+
+UI.SpaceCombat.Outcome.Propaganda=The news of our victory increased global support of our faction by {0}%

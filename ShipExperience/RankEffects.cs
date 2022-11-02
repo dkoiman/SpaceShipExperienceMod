@@ -21,6 +21,10 @@ namespace SpaceShipExtras.ShipExperience {
                 EffectSecondaryStateType.none,
                 InstantEffect.Propaganda_Faction,
                 propaganda, 0, "");
+
+            if (!faction.player.isAI) {
+                PostcombatReportStash.propagandaGain = propaganda;
+            }
         }
 
         public static void DispatchResults(TIFactionState faction,
@@ -29,6 +33,10 @@ namespace SpaceShipExtras.ShipExperience {
                                            Outcome outcome) {
             if (!Main.enabled || faction == null) {
                 return;
+            }
+
+            if (!faction.player.isAI) {
+                PostcombatReportStash.playerFactionWin = true;
             }
 
             int maxRank = ranks.Values.Max();
