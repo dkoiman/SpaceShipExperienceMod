@@ -152,11 +152,19 @@ namespace SpaceShipExtras.Utility {
         // some strange behaviour, where affordability of repairs is calculated
         // in disconnect with total accumulated cost so far. We are pretty much
         // doing the same.
-        public static TIResourcesCost ExpectedCost(TISpaceFleetState fleetState) {
+        public static TIResourcesCost ExpectedCost(TISpaceFleetState fleet, bool sched = false) {
             TIResourcesCost totalCost = new TIResourcesCost();
-            var essentialRepairs = EssentialRepairsCost(fleetState);
+            var essentialRepairs = EssentialRepairsCost(fleet);
 
             foreach (var cost in essentialRepairs) {
+                if (!cost.Value.CanAfford(cost.Key.faction, 1f, null, float.PositiveInfinity)) {
+                    continue;
+                }
+
+                if (sched) {
+                    ScheduleEssentialRepairs(cost.Key);
+                }
+
                 totalCost.SumCosts(cost.Value);
                 totalCost.SetCompletionTime_Days(
                     totalCost.completionTime_days + cost.Value.completionTime_days);
@@ -164,7 +172,7 @@ namespace SpaceShipExtras.Utility {
 
             totalCost.SetCompletionTime_Days(
                 totalCost.completionTime_days * kRepairTimeMultipleier /
-                CountFunctionalDeepSpaceRepairBays(fleetState));
+                CountFunctionalDeepSpaceRepairBays(fleet));
 
             return totalCost;
         }
@@ -262,23 +270,7 @@ namespace SpaceShipExtras.Utility {
                                                 TIResourcesCost resourcesCost = null,
                                                 Trajectory trajectory = null) {
             TISpaceFleetState fleet = actor.ref_fleet;
-            TIResourcesCost totalCost = new TIResourcesCost();
-            var essentialRepairs = EssentialRepairsCost(fleet);
-
-            foreach (var cost in essentialRepairs) {
-                if (!cost.Value.CanAfford(cost.Key.faction, 1f, null, float.PositiveInfinity)) {
-                    continue;
-                }
-
-                ScheduleEssentialRepairs(cost.Key);
-                totalCost.SumCosts(cost.Value);
-                totalCost.SetCompletionTime_Days(
-                    totalCost.completionTime_days + cost.Value.completionTime_days); 
-            }
-
-            totalCost.SetCompletionTime_Days(
-                totalCost.completionTime_days * kRepairTimeMultipleier /
-                CountFunctionalDeepSpaceRepairBays(fleet));
+            TIResourcesCost totalCost = ExpectedCost(fleet, true);
 
             return base.OnOperationConfirm(actor, target, totalCost, trajectory);
         }
@@ -289,9 +281,11 @@ namespace SpaceShipExtras.Utility {
             TISpaceFleetState fleet = actor.ref_fleet;
 
             if (HasFunctionalDeepSpaceRepairBay(fleet) &&
+                HasEssentialRepairs(fleet) &&
                 !fleet.inCombat &&
                 !fleet.transferAssigned &&
-                !fleet.dockedAtHab) {
+                (!fleet.dockedAtHab ||
+                 !fleet.ref_hab.AllowsShipConstruction(fleet.faction, false, false))) { 
                 foreach (var ship in fleet.ships) {
                     ship.plannedResupplyAndRepair.ProcessResupplyAndRepair(ship);
                 }

@@ -10,6 +10,14 @@ UI.Notifications.DeepSpaceRepairDone.Headline={0} fleet {1} finished deep space 
 UI.Notifications.DeepSpaceRepairDone.Summary={0} fleet {1} finished deep space repairs
 UI.Notifications.DeepSpaceRepairDone.Detail={0} fleet {1} finished deep space repairs
 
+TIFuelPipe.displayName.FuelPipe=Fuel Pipe
+TIFuelPipe.description.FuelPipe=Allows refueling ships in deep space. Can only be fitted to "Utility ship"
+RefuelOperation.displayName=Refuel
+RefuelOperation.description=Refuel ships in deep space
+UI.Notifications.DeepSpaceRefuelDone.Headline={0} fleet {1} finished deep space refueling
+UI.Notifications.DeepSpaceRefuelDone.Summary={0} fleet {1} finished deep space refueling
+UI.Notifications.DeepSpaceRefuelDone.Detail={0} fleet {1} finished deep space refueling
+
 TIOrbitalCaptureProject.displayName.Project_OrbitalCapture=Orbital Capture
 TIOrbitalCaptureProject.summary.Project_OrbitalCapture=<shipmodule>
 TIDebrisCleaner.displayName.DebrisCleaner=Debris Cleaner

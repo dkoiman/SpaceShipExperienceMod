@@ -10,6 +10,7 @@ namespace SpaceShipExtras.Utility {
         static bool Prefix(TISpaceShipTemplate __instance, TIShipPartTemplate part, ref bool __result) {
             bool isSpecialUtilityModule = (
                 part as TIDeepSpaceRepairBay != null ||
+                part as TIFuelPipe != null ||
                 part as TIDebrisCleaner != null);
 
             if (isSpecialUtilityModule &&
@@ -32,8 +33,11 @@ namespace SpaceShipExtras.Utility {
             } else if (__instance as ClearDebrisOperation != null) {
                 __result = "space_ship_extras/ICO_ClearDebrisOperation";
                 return false;
+            } else if (__instance as RefuelOperation != null) {
+                __result = "space_ship_extras/ICO_RefuelOperation";
+                return false;
             }
-            
+
             return true;
         }
     }
@@ -49,6 +53,10 @@ namespace SpaceShipExtras.Utility {
             ClearDebrisOperation clearDebris = new ClearDebrisOperation();
             OperationsManager.fleetOperations.Add(clearDebris);
             OperationsManager.operationsLookup.Add(clearDebris.GetType(), clearDebris);
+
+            RefuelOperation refuel = new RefuelOperation();
+            OperationsManager.fleetOperations.Add(refuel);
+            OperationsManager.operationsLookup.Add(refuel.GetType(), refuel);
         }
     }
 
@@ -60,6 +68,7 @@ namespace SpaceShipExtras.Utility {
         static void Prefix() {
             TemplateManager.Add<TIShipHullTemplate>(new TIUtilityShipHull());
 
+            TemplateManager.Add<TIFuelPipe>(new TIFuelPipe());
             TemplateManager.Add<TIDeepSpaceRepairBay>(new TIDeepSpaceRepairBay());
             TemplateManager.Add<TIProjectTemplate>(new TIDeepSpaceMaintenanceProject());
 

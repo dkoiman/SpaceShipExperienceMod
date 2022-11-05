@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 646401857
+CRC: 3134392374
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 6db65db6b89593a9b8682d57bcdd8aae
+    Hash: 2f64aab99c6503017024a659dbd0b242
   TypeTreeHash:
     serializedVersion: 2
     Hash: 4df8c69f2c8a6ad9e3cbf82bb83e4dc3
@@ -15,10 +15,13 @@ ClassTypes:
   Script: {instanceID: 0}
 SerializeReferenceClassIdentifiers: []
 Assets:
+- Assets/space_ship_extras/ICO_FuelPipe.png
 - Assets/space_ship_extras/ICO_DebrisCleaner.png
 - Assets/space_ship_extras/ICO_ClearDebrisOperation_off.png
 - Assets/space_ship_extras/ICO_DeepSpaceRepairFleetOperation_on.png
 - Assets/space_ship_extras/ICO_DeepSpaceRepairFleetOperation_off.png
 - Assets/space_ship_extras/ICO_DeepSpaceRepairBay.png
 - Assets/space_ship_extras/ICO_ClearDebrisOperation_on.png
+- Assets/space_ship_extras/ICO_RefuelOperation_off.png
+- Assets/space_ship_extras/ICO_RefuelOperation_on.png
 Dependencies: []
