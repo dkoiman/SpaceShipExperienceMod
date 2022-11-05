@@ -1,5 +1,13 @@
 # Patchnotes
 
+## 0.0.7
+
+* Recoloured modules' icons to be more fitting the game's pallet.
+* Small adjustments into deep space repair bay activation logic
+* [Experimenmtal] Refueling Module - allows refueling ships in deep space.
+  Currently has a quirk that depleting refueling tank doesn't lower the total
+  mass of the ship (mass calculations in the game are messy).
+
 ## 0.0.6
 
 * Fixed a small bug with deep space repairs where it would not execute if

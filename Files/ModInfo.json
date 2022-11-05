@@ -5,7 +5,7 @@
 	"Author": "dkoiman",
 	"ModURL": "https://github.com/dkoiman/SpaceShipExtras",
 	"Requirements": [],
-	"Version": "0.0.6",
+	"Version": "0.0.7",
 	"Description": "Extra features for space ships",
 	"AssemblyName": "SpaceShipExtras.dll",
 	"EntryMethod": "SpaceShipExtras.Main.Load"

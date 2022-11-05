@@ -11,7 +11,7 @@ UI.Notifications.DeepSpaceRepairDone.Summary={0} fleet {1} finished deep space r
 UI.Notifications.DeepSpaceRepairDone.Detail={0} fleet {1} finished deep space repairs
 
 TIFuelPipe.displayName.FuelPipe=Fuel Pipe
-TIFuelPipe.description.FuelPipe=Allows refueling ships in deep space. Can only be fitted to "Utility ship"
+TIFuelPipe.description.FuelPipe=Allows refueling ships in deep space. Can only be fitted to "Utility ship". Note, currently the mass of the module stays constant even when depleeted. Will be attempted to be fixed in future versions of the mod.
 RefuelOperation.displayName=Refuel
 RefuelOperation.description=Refuel ships in deep space
 UI.Notifications.DeepSpaceRefuelDone.Headline={0} fleet {1} finished deep space refueling

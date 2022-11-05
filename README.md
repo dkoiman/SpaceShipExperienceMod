@@ -116,3 +116,19 @@ operation to remove a cloud of debris.
   and takes as many days to complete.
 * Multiple ships with the module in the fleet speed up the process and reduce
   the delta-V cost.
+
+### FuelPipe [Experimental]
+
+`Fuel Pipe` is a utility module that allows refueling ships in the deep space.
+
+#### Use
+* Unlocks with `Deep Space Maintenance` faction project which depends on
+  `Shipyards` project.
+* Can ONLY be fitted to `Utility ship` design.
+* One module supplies 5000 ton of propelant.
+* The propelant type is abstracted and charged at the refueling time.
+* Module resource depletion translates to the module's damage.
+* Presently module's depletion doesn't reduce the total weight of the ship
+  (because mass calculations are messy and I wasn't able to reliably patch
+  all quirks).
+* Takes 4x time of refular reefueling, multiple ships make it faster.

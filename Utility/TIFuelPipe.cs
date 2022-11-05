@@ -13,13 +13,13 @@ namespace SpaceShipExtras.Utility {
             var resource = new ResourceCostBuilder();
 
             resource.water = 0f;
-            resource.volatiles = 0.22f;
-            resource.metals = 0.68f;
-            resource.nobleMetals = 0.1f;
+            resource.volatiles = 0.0022f;
+            resource.metals = 0.0068f;
+            resource.nobleMetals = 0.001f;
 
             base.dataName = "FuelPipe";
             base.friendlyName = "Fuel Pipe";
-            base.crew = 10;
+            base.crew = 5;
             base.mass_tons = 5000;
             base.grouping = -1;
             base.requiredProjectName = "Project_DeepSpaceMaintenance";
