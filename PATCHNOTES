@@ -1,5 +1,9 @@
 # Patchnotes
 
+## 0.0.7.1
+
+* Fix a crash on the first week of a new game.
+
 ## 0.0.7
 
 * Recoloured modules' icons to be more fitting the game's pallet.
