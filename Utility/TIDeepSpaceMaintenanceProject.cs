@@ -16,7 +16,7 @@ namespace SpaceShipExtras.Utility {
                 "Project_Shipyard",
             };
             base.altPrereq0 = "";
-            base.requiredObjectiveNames = new List<string> { };
+            base.requiredObjectiveNames = new List<string> { "" };
             base.altRequiredObjective0Name = "";
             base.requiredMilestone = CampaignMilestone.None;
             base.effects = new string[] { };
